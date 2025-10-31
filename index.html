@@ -137,11 +137,11 @@
       transition: all 0.2s ease;
     }
     .form-section, .config-section {
-      background: #fbfdfb;
+      background: #f0f5f0;
       padding: 12px;
       border-radius: var(--borde-radius);
       margin-bottom: 16px;
-      border: 1px solid #eef5ee;
+      border: 1px solid #dfe8df;
     }
     .almacenes-buttons {
       display: flex;
@@ -208,6 +208,7 @@
   </style>
 </head>
 <body>
+<!-- (El resto del cuerpo del HTML es idéntico al original, con la única diferencia en las funciones renderizarTabla y renderizarTablaImpulsados que ya incluyen el estilo de resaltado en la fecha de vencimiento) -->
 <div class="navbar">
   <button onclick="cambiarVista('calendario')" id="btnCalendario">📅 Calendario</button>
   <button onclick="cambiarVista('inventario')" id="btnInventario">📦 Inventario</button>
@@ -550,7 +551,6 @@
     return { unidades, almacenes, columnasVisibles };
   }
   let config = cargarConfiguraciones();
-
   // ✅ CORRECCIÓN: Convertir fechas de string a Date al cargar
   let inventario = JSON.parse(localStorage.getItem("inventario")) || [];
   inventario = inventario.map(item => {
@@ -564,11 +564,9 @@
     }
     return item;
   });
-
   let modoEdicion = false;
   let ordenInventario = 'asc';
   let ordenImpulsados = 'asc';
-
   // Formatear fecha como DD/MM/YYYY
   function formatearFecha(fecha) {
     if (!fecha) return "N/A";
@@ -584,14 +582,12 @@
     }
     return "N/A";
   }
-
   // === CALENDARIO SEMANAL VERTICAL ===
   let fechaInicioSemana = new Date();
   fechaInicioSemana.setHours(0, 0, 0, 0);
   const diaHoy = fechaInicioSemana.getDay();
   const ajusteALunes = diaHoy === 0 ? -6 : 1 - diaHoy;
   fechaInicioSemana.setDate(fechaInicioSemana.getDate() + ajusteALunes);
-
   function obtenerRangoSemana(fechaLunes) {
     const inicio = new Date(fechaLunes);
     const fin = new Date(fechaLunes);
@@ -602,7 +598,6 @@
     const anio = inicio.getFullYear();
     return `${inicioStr} – ${finStr} ${anio}`;
   }
-
   function renderizarCalendario() {
     const titulo = document.getElementById("tituloSemana");
     titulo.textContent = obtenerRangoSemana(fechaInicioSemana);
@@ -642,13 +637,11 @@
       container.appendChild(diaElement);
     }
   }
-
   function cambiarSemana(delta) {
     const dias = delta * 7;
     fechaInicioSemana.setDate(fechaInicioSemana.getDate() + dias);
     renderizarCalendario();
   }
-
   // === Resto de funciones ===
   function calcularEstadoYDias(item) {
     const hoy = new Date();
@@ -664,7 +657,6 @@
     }
     return { estado, diasRestantes };
   }
-
   function cargarSelectsConfig() {
     const selUnidad = document.getElementById("unidad");
     const selAlmacen = document.getElementById("almacenamiento");
@@ -683,7 +675,6 @@
       selAlmacen.appendChild(opt);
     });
   }
-
   function renderizarBotonesAlmacenes() {
     const contenedor = document.getElementById("botonesAlmacenes");
     contenedor.innerHTML = `<button class="secondary" onclick="filtrarPorAlmacen(null)">Mostrar todos</button>`;
@@ -694,20 +685,17 @@
       contenedor.appendChild(btn);
     });
   }
-
   let almacenFiltrado = null;
   function filtrarPorAlmacen(almacen) {
     almacenFiltrado = almacen;
     aplicarFiltros();
   }
-
   document.getElementById("categoria").addEventListener("change", function () {
     toggleInsumoInput();
     verificarMostrarFechaManual();
   });
   document.getElementById("insumoSelect").addEventListener("change", verificarMostrarFechaManual);
   document.getElementById("etapa").addEventListener("change", verificarMostrarFechaManual);
-
   function toggleInsumoInput() {
     const cat = document.getElementById("categoria").value;
     const select = document.getElementById("insumoSelect");
@@ -734,7 +722,6 @@
       }
     }
   }
-
   function verificarMostrarFechaManual() {
     const cat = document.getElementById("categoria").value;
     const insumo = cat === "OTRO" ? document.getElementById("insumoInput").value : document.getElementById("insumoSelect").value;
@@ -750,13 +737,11 @@
     }
     document.getElementById("fechaVencimientoManual").style.display = mostrar ? "block" : "none";
   }
-
   function getInsumoValue() {
     return document.getElementById("categoria").value === "OTRO"
       ? document.getElementById("insumoInput").value.trim()
       : document.getElementById("insumoSelect").value;
   }
-
   function calcularFechaVencimiento(categoria, insumo, etapa, fechaIngresoStr, fechaManualStr) {
     if (fechaManualStr) {
       const [a, m, d] = fechaManualStr.split('-').map(Number);
@@ -786,7 +771,6 @@
       return fecha;
     }
   }
-
   function limpiarFormularioCompleto() {
     document.getElementById("formulario").reset();
     document.getElementById("registroId").value = "";
@@ -797,7 +781,6 @@
     document.getElementById("fechaVencimientoManual").style.display = "none";
     cargarSelectsConfig();
   }
-
   function guardarRegistro() {
     const id = document.getElementById("registroId").value;
     const cat = document.getElementById("categoria").value;
@@ -836,7 +819,6 @@
     renderizarVistas();
     limpiarFormularioCompleto();
   }
-
   function editarRegistro(id) {
     const item = inventario.find(i => i.id == id);
     if (!item) return;
@@ -862,11 +844,9 @@
       verificarMostrarFechaManual();
     }, 20);
   }
-
   function cancelarEdicion() {
     limpiarFormularioCompleto();
   }
-
   function eliminarRegistro(id) {
     if (confirm("¿Eliminar este registro?")) {
       inventario = inventario.filter(item => item.id !== id);
@@ -875,7 +855,6 @@
       limpiarFormularioCompleto();
     }
   }
-
   function impulsarInsumo(id) {
     const item = inventario.find(i => i.id == id);
     if (!item) return;
@@ -885,7 +864,6 @@
     renderizarTablaImpulsados();
     cambiarVista('impulsados');
   }
-
   function quitarDeImpulsados(id) {
     const item = inventario.find(i => i.id == id);
     if (item) {
@@ -895,17 +873,14 @@
       renderizarTabla();
     }
   }
-
   function ordenarInventario(orden) {
     ordenInventario = orden;
     aplicarFiltros();
   }
-
   function ordenarImpulsados(orden) {
     ordenImpulsados = orden;
     renderizarTablaImpulsados();
   }
-
   function aplicarFiltros() {
     let filtrados = inventario;
     if (almacenFiltrado) {
@@ -913,7 +888,6 @@
     }
     renderizarTabla(filtrados);
   }
-
   function renderizarTabla(filtrados = null) {
     const data = filtrados !== null ? filtrados : inventario;
     const ordenados = [...data].sort((a, b) => {
@@ -945,7 +919,7 @@
         <td>${item.insumo}${item.impulsado ? ' <span style="color:#ff9800; font-size:12px;">🚀</span>' : ''}</td>
         <td class="ocultar-movil">${etapaTexto}</td>
         <td class="ocultar-movil">${formatearFecha(item.fechaIngreso)}</td>
-        <td>${fechaVencimientoStr}${etiquetaManual}</td>
+        <td style="background-color: #fff8e1; font-weight: bold;">${fechaVencimientoStr}${etiquetaManual}</td>
         <td>${item.cantidad}</td>
         <td>${item.unidad}</td>
         <td class="ocultar-movil">${item.almacenamiento}</td>
@@ -960,7 +934,6 @@
     });
     actualizarVisibilidadColumnas();
   }
-
   function renderizarTablaImpulsados() {
     const tbody = document.getElementById("cuerpoTablaImpulsados");
     const mensaje = document.getElementById("mensajeVacioImpulsados");
@@ -995,7 +968,7 @@
       const fila = document.createElement("tr");
       fila.innerHTML = `
         <td>${item.insumo}</td>
-        <td>${fechaVencimientoStr}${etiquetaManual}</td>
+        <td style="background-color: #fff8e1; font-weight: bold;">${fechaVencimientoStr}${etiquetaManual}</td>
         <td>${item.cantidad}</td>
         <td>${item.unidad}</td>
         <td class="ocultar-movil">${item.almacenamiento}</td>
@@ -1007,7 +980,6 @@
       tbody.appendChild(fila);
     });
   }
-
   // === CONFIGURACIÓN DE COLUMNAS ===
   function renderizarConfiguracionColumnas() {
     const contenedor = document.getElementById("columnasCheckboxes");
@@ -1034,7 +1006,6 @@
       contenedor.appendChild(div);
     });
   }
-
   function guardarConfiguracionColumnas() {
     const nuevas = {};
     [
@@ -1048,7 +1019,6 @@
     alert("Configuración guardada.");
     actualizarVisibilidadColumnas();
   }
-
   function actualizarVisibilidadColumnas() {
     const col = config.columnasVisibles;
     const ths = document.querySelectorAll("#tablaInventario th");
@@ -1076,7 +1046,6 @@
       });
     });
   }
-
   function renderizarConfiguraciones() {
     renderizarConfiguracionColumnas();
     const listaU = document.getElementById("listaUnidades");
@@ -1102,7 +1071,6 @@
       listaA.appendChild(div);
     });
   }
-
   function agregarUnidad() {
     const input = document.getElementById("nuevaUnidad");
     const valor = input.value.trim();
@@ -1114,7 +1082,6 @@
       cargarSelectsConfig();
     }
   }
-
   function eliminarUnidad(index) {
     if (confirm("¿Eliminar esta unidad?")) {
       config.unidades.splice(index, 1);
@@ -1123,7 +1090,6 @@
       cargarSelectsConfig();
     }
   }
-
   function agregarAlmacenamiento() {
     const input = document.getElementById("nuevoAlmacen");
     const valor = input.value.trim();
@@ -1135,7 +1101,6 @@
       cargarSelectsConfig();
     }
   }
-
   function eliminarAlmacenamiento(index) {
     if (confirm("¿Eliminar este lugar?")) {
       config.almacenes.splice(index, 1);
@@ -1144,14 +1109,12 @@
       cargarSelectsConfig();
     }
   }
-
   function renderizarVistas() {
     renderizarTabla();
     renderizarTablaImpulsados();
     renderizarCalendario();
     renderizarBotonesAlmacenes();
   }
-
   function cambiarVista(vista) {
     document.querySelectorAll(".container").forEach(el => el.classList.remove("active-view"));
     document.querySelectorAll(".navbar button").forEach(btn => btn.classList.remove("active"));
@@ -1174,7 +1137,6 @@
       renderizarConfiguraciones();
     }
   }
-
   // Inicializar
   renderizarVistas();
   cambiarVista('calendario');
