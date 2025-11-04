@@ -208,7 +208,6 @@
   </style>
 </head>
 <body>
-<!-- (El resto del cuerpo del HTML es idéntico al original, con la única diferencia en las funciones renderizarTabla y renderizarTablaImpulsados que ya incluyen el estilo de resaltado en la fecha de vencimiento) -->
 <div class="navbar">
   <button onclick="cambiarVista('calendario')" id="btnCalendario">📅 Calendario</button>
   <button onclick="cambiarVista('inventario')" id="btnInventario">📦 Inventario</button>
@@ -245,7 +244,7 @@
       <label for="almacenamiento">Almacenamiento</label>
       <select id="almacenamiento"></select>
       <label for="fechaIngreso">F. Ingreso</label>
-      <input type="date" id="fechaIngreso" required />
+      <input type="date" id="fechaIngreso" /> <!-- ❌ REMOVIDO required -->
       <label for="fechaVencimientoManual">F. Venc. Manual (si aplica)</label>
       <input type="date" id="fechaVencimientoManual" />
       <label for="cantidad">Cant.</label>
@@ -791,30 +790,51 @@
     const fechaManual = document.getElementById("fechaVencimientoManual").value;
     const cantidad = parseFloat(document.getElementById("cantidad").value);
     const unidad = document.getElementById("unidad").value;
-    if (!cat || !insumo || !etapa || !fechaIngreso || !cantidad || !unidad) {
+
+    // Validaciones básicas
+    if (!cat || !insumo || !etapa || !cantidad || !unidad) {
       alert("Complete todos los campos obligatorios.");
       return;
     }
+
+    // Determinar si "Fecha de Ingreso" es obligatoria
+    let fechaIngresoObligatoria = true;
+    if (cat !== "OTRO" && etapa === "RECIBIDO" && db[cat] && db[cat][insumo]) {
+      const vidaUtil = db[cat][insumo]["RECIBIDO"];
+      if (vidaUtil === "Según empaque") {
+        fechaIngresoObligatoria = false;
+      }
+    }
+
+    if (fechaIngresoObligatoria && !fechaIngreso) {
+      alert("Debe ingresar la fecha de ingreso.");
+      return;
+    }
+
+    // Calcular fecha de vencimiento
     const fechaVencimiento = calcularFechaVencimiento(cat, insumo, etapa, fechaIngreso, fechaManual);
+
     const registro = {
       id: modoEdicion && id ? parseInt(id) : Date.now(),
       categoria: cat,
       insumo,
       etapa,
       almacenamiento,
-      fechaIngreso,
+      fechaIngreso: fechaIngreso || null,
       fechaVencimiento,
       cantidad,
       unidad,
       fechaVencimientoManual: fechaManual || null,
       impulsado: false
     };
+
     if (modoEdicion && id) {
       const index = inventario.findIndex(item => item.id == id);
       if (index !== -1) inventario[index] = registro;
     } else {
       inventario.push(registro);
     }
+
     localStorage.setItem("inventario", JSON.stringify(inventario));
     renderizarVistas();
     limpiarFormularioCompleto();
