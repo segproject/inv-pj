@@ -8,6 +8,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <!-- ✅ Librería para tablas en PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <style>
     :root {
       --color-fondo: #fafbfd;
@@ -136,12 +138,60 @@
       border-radius: 50%;
       transition: all 0.2s ease;
     }
-    .form-section, .config-section {
+    .form-section {
       background: #f0f5f0;
-      padding: 12px;
+      padding: 16px;
       border-radius: var(--borde-radius);
       margin-bottom: 16px;
       border: 1px solid #dfe8df;
+    }
+    .form-group {
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed #aaa;
+    }
+    .form-group:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .form-group-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: var(--color-secondary);
+    }
+    .autocomplete {
+      position: relative;
+      width: 100%;
+    }
+    .autocomplete-items {
+      position: absolute;
+      border: 1px solid #ddd;
+      border-top: none;
+      z-index: 99;
+      top: 100%;
+      left: 0;
+      right: 0;
+      border-radius: 0 0 4px 4px;
+      background: white;
+      max-height: 200px;
+      overflow-y: auto;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .autocomplete-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .autocomplete-item:hover,
+    .autocomplete-item.highlight {
+      background: #e8f5e9;
+    }
+    .item-categoria {
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
     }
     .almacenes-buttons {
       display: flex;
@@ -220,37 +270,52 @@
   <div class="form-section" id="formSection">
     <form id="formulario">
       <input type="hidden" id="registroId" />
-      <label for="categoria">Categoría</label>
-      <select id="categoria" required>
-        <option value="">-- Seleccionar --</option>
-        <option value="CÁRNICOS EN TROZOS Y RODAJAS">Cárnicos</option>
-        <option value="QUESOS">Quesos</option>
-        <option value="FRUTAS Y VEGETALES">Frutas y Vegetales</option>
-        <option value="SALSAS">Salsas</option>
-        <option value="OTROS INSUMOS">Otros Insumos</option>
-        <option value="PREPS">Preparaciones (PREPS)</option>
-        <option value="OTRO">Otro (escribir)</option>
-      </select>
-      <label for="insumoSelect">Insumo</label>
-      <select id="insumoSelect" style="display:none;"></select>
-      <input type="text" id="insumoInput" placeholder="Nombre del insumo" style="display:none;" />
-      <label for="etapa">Etapa</label>
-      <select id="etapa" required>
-        <option value="">-- Seleccionar --</option>
-        <option value="RECIBIDO">Recibido</option>
-        <option value="PREPARADO">Preparado</option>
-        <option value="LINEA">En Línea</option>
-      </select>
-      <label for="almacenamiento">Almacenamiento</label>
-      <select id="almacenamiento"></select>
-      <label for="fechaIngreso">F. Ingreso</label>
-      <input type="date" id="fechaIngreso" /> <!-- ❌ REMOVIDO required -->
-      <label for="fechaVencimientoManual">F. Venc. Manual (si aplica)</label>
-      <input type="date" id="fechaVencimientoManual" />
-      <label for="cantidad">Cant.</label>
-      <input type="number" id="cantidad" min="0.1" step="0.1" required />
-      <label for="unidad">U/M</label>
-      <select id="unidad" required></select>
+      <!-- SECCIÓN 1: DATOS DEL INSUMO -->
+      <div class="form-group">
+        <div class="form-group-title">1. Datos del insumo</div>
+        <label for="categoria">Categoría</label>
+        <select id="categoria">
+          <option value="">-- Todas las categorías --</option>
+          <option value="CÁRNICOS EN TROZOS Y RODAJAS">Cárnicos</option>
+          <option value="QUESOS">Quesos</option>
+          <option value="FRUTAS Y VEGETALES">Frutas y Vegetales</option>
+          <option value="SALSAS">Salsas</option>
+          <option value="OTROS INSUMOS">Otros Insumos</option>
+          <option value="PREPS">Preparaciones (PREPS)</option>
+          <option value="OTRO">Otro (escribir)</option>
+        </select>
+        <label for="busquedaGlobal">Insumo</label>
+        <div class="autocomplete">
+          <input type="text" id="busquedaGlobal" placeholder="Escriba para buscar..." autocomplete="off" />
+          <div class="autocomplete-items" id="listaAutocompletado"></div>
+        </div>
+        <input type="text" id="insumoInput" placeholder="Nombre del insumo" style="display:none; margin-top:8px;" />
+      </div>
+      <!-- SECCIÓN 2: GESTIÓN OPERATIVA -->
+      <div class="form-group">
+        <div class="form-group-title">2. Gestión operativa</div>
+        <label for="etapa">Etapa</label>
+        <select id="etapa" required>
+          <option value="">-- Seleccionar --</option>
+          <option value="RECIBIDO">Recibido</option>
+          <option value="PREPARADO">Preparado</option>
+          <option value="LINEA">En Línea</option>
+        </select>
+        <label for="almacenamiento">Almacenamiento</label>
+        <select id="almacenamiento"></select>
+        <label for="fechaIngreso">F. Ingreso</label>
+        <input type="date" id="fechaIngreso" />
+        <label for="fechaVencimientoManual">F. Venc. Manual (si aplica)</label>
+        <input type="date" id="fechaVencimientoManual" />
+      </div>
+      <!-- SECCIÓN 3: CANTIDAD Y UNIDAD -->
+      <div class="form-group">
+        <div class="form-group-title">3. Cantidad y unidad</div>
+        <label for="cantidad">Cant.</label>
+        <input type="number" id="cantidad" min="0.1" step="0.1" required />
+        <label for="unidad">U/M</label>
+        <select id="unidad" required></select>
+      </div>
       <div style="display: flex; gap: 8px; margin-top: 12px;">
         <button type="button" onclick="guardarRegistro()">Guardar</button>
         <button type="button" onclick="limpiarFormularioCompleto()">Limpiar</button>
@@ -260,9 +325,7 @@
   </div>
   <!-- Botones de almacenes -->
   <div class="form-section">
-    <div class="almacenes-buttons" id="botonesAlmacenes">
-      <!-- Se llenará dinámicamente -->
-    </div>
+    <div class="almacenes-buttons" id="botonesAlmacenes"></div>
   </div>
   <div style="margin: 12px 0; display:flex; gap:8px; flex-wrap:wrap;">
     <button onclick="exportarPDF('inventario')" class="export">📄 PDF</button>
@@ -290,12 +353,7 @@
 <!-- === POR IMPULSAR === -->
 <div id="vistaImpulsados" class="container">
   <h2>🎯 Por Impulsar</h2>
-  <div class="form-section" style="padding:8px;">
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <button onclick="ordenarImpulsados('asc')" title="Más próximos">🔼</button>
-      <button onclick="ordenarImpulsados('desc')" title="Más lejanos">🔽</button>
-    </div>
-  </div>
+  <!-- ⚠️ Botones de orden eliminados -->
   <div style="margin: 12px 0; display:flex; gap:8px; flex-wrap:wrap;">
     <button onclick="exportarPDF('impulsados')" class="export">📄 PDF</button>
     <button onclick="exportarExcel('impulsados')" class="export">xlsx</button>
@@ -354,7 +412,6 @@
     </div>
     <div id="listaAlmacenamientos" style="margin-top:12px;"></div>
   </div>
-  <!-- SECCIÓN DE COLUMNAS -->
   <div class="config-section">
     <h3>Columnas visibles en inventario</h3>
     <div id="columnasCheckboxes" style="margin-top:12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px;"></div>
@@ -438,39 +495,63 @@
       "Rollitos de Canela": { RECIBIDO: null, PREPARADO: "6 horas", LINEA: "6 horas" }
     }
   };
+  // === ÍNDICE GLOBAL DE INSUMOS ===
+  const indiceGlobal = [];
+  for (const categoria in db) {
+    for (const insumo in db[categoria]) {
+      indiceGlobal.push({ insumo, categoria });
+    }
+  }
   // === FUNCIONES DE EXPORTACIÓN ===
   function exportarPDF(tipo) {
-    const elementId = tipo === 'inventario' ? 'tablaInventario' : 'tablaImpulsados';
     const titulo = tipo === 'inventario' ? 'Inventario de Insumos' : 'Insumos por Impulsar';
-    const element = document.getElementById(elementId).cloneNode(true);
-    const acciones = element.querySelectorAll('td:last-child, th:last-child');
-    acciones.forEach(c => c.remove());
-    const container = document.createElement('div');
-    container.style.padding = '12px';
-    container.innerHTML = `<h2 style="text-align:center; font-size:16px;">${titulo}</h2>`;
-    container.appendChild(element);
-    document.body.appendChild(container);
-    container.style.position = 'absolute';
-    container.style.left = '-9999px';
-    html2canvas(container).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('landscape', 'mm', 'a4');
-      const imgWidth = 297;
-      const pageHeight = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      pdf.save(`${titulo.replace(/\s+/g, '_')}.pdf`);
-      document.body.removeChild(container);
+    const columnas = tipo === 'inventario'
+      ? ["Insumo", "Etapa", "F. Ingreso", "F. Venc.", "Cant.", "U/M", "Almac.", "Días Rest."]
+      : ["Insumo", "F. Venc.", "Cant.", "U/M", "Almac.", "Días Rest."];
+    const datos = [];
+    const filtrar = tipo === 'inventario' ? inventario : inventario.filter(i => i.impulsado);
+    // Ordenar por fecha de vencimiento (más próximos primero)
+    const filas = [...filtrar].sort((a, b) => {
+      const fechaA = a.fechaVencimiento || new Date(8640000000000000);
+      const fechaB = b.fechaVencimiento || new Date(8640000000000000);
+      return fechaA - fechaB; // siempre ascendente para PDF
     });
+    filas.forEach(item => {
+      if (tipo === 'inventario') {
+        datos.push([
+          item.insumo,
+          { RECIBIDO: "Recibido", PREPARADO: "Preparado", LINEA: "En Línea" }[item.etapa] || item.etapa,
+          formatearFecha(item.fechaIngreso),
+          formatearFecha(item.fechaVencimiento),
+          item.cantidad,
+          item.unidad,
+          item.almacenamiento,
+          calcularEstadoYDias(item).diasRestantes ?? "Empaque"
+        ]);
+      } else {
+        datos.push([
+          item.insumo,
+          formatearFecha(item.fechaVencimiento),
+          item.cantidad,
+          item.unidad,
+          item.almacenamiento,
+          calcularEstadoYDias(item).diasRestantes ?? "Empaque"
+        ]);
+      }
+    });
+    const doc = new jsPDF('landscape');
+    doc.setFontSize(16);
+    doc.text(titulo, 15, 15);
+    doc.autoTable({
+      startY: 20,
+      head: [columnas],
+      body: datos,
+      theme: 'grid',
+      headStyles: { fillColor: [76, 175, 80] },
+      styles: { fontSize: 10, cellPadding: 3 },
+      columnStyles: { 0: { cellWidth: 'auto' } }
+    });
+    doc.save(`${titulo.replace(/\s+/g, '_')}.pdf`);
   }
   function exportarExcel(tipo) {
     const elementId = tipo === 'inventario' ? 'tablaInventario' : 'tablaImpulsados';
@@ -529,6 +610,71 @@
     reader.readAsText(file);
     event.target.value = '';
   }
+  // === AUTOCOMPLETADO GLOBAL ===
+  let insumoSeleccionado = null;
+  let categoriaSeleccionada = null;
+  function initAutocompletado() {
+    const input = document.getElementById("busquedaGlobal");
+    const lista = document.getElementById("listaAutocompletado");
+    const selectCategoria = document.getElementById("categoria");
+    input.addEventListener("input", () => {
+      const query = input.value.trim().toLowerCase();
+      const filtroCat = selectCategoria.value;
+      lista.innerHTML = '';
+      if (!query) return;
+      let coincidencias = indiceGlobal.filter(item =>
+        item.insumo.toLowerCase().includes(query)
+      );
+      if (filtroCat && filtroCat !== "OTRO" && filtroCat !== "") {
+        coincidencias = coincidencias.filter(item => item.categoria === filtroCat);
+      }
+      coincidencias = coincidencias.slice(0, 15);
+      coincidencias.forEach(item => {
+        const div = document.createElement("div");
+        div.classList.add("autocomplete-item");
+        div.innerHTML = `<div>${item.insumo}</div><div class="item-categoria">${item.categoria}</div>`;
+        div.addEventListener("click", () => {
+          input.value = item.insumo;
+          insumoSeleccionado = item.insumo;
+          categoriaSeleccionada = item.categoria;
+          selectCategoria.value = item.categoria;
+          document.getElementById("insumoInput").style.display = "none";
+          lista.innerHTML = '';
+          verificarMostrarFechaManual();
+        });
+        lista.appendChild(div);
+      });
+      if (coincidencias.length === 0) {
+        const div = document.createElement("div");
+        div.classList.add("autocomplete-item");
+        div.textContent = "No encontrado. ¿Crear manualmente?";
+        div.style.fontStyle = "italic";
+        div.addEventListener("click", () => {
+          input.value = "";
+          insumoSeleccionado = null;
+          categoriaSeleccionada = "OTRO";
+          selectCategoria.value = "OTRO";
+          document.getElementById("insumoInput").style.display = "block";
+          document.getElementById("insumoInput").focus();
+          lista.innerHTML = '';
+        });
+        lista.appendChild(div);
+      }
+    });
+    document.addEventListener("click", (e) => {
+      if (!input.contains(e.target) && !lista.contains(e.target)) {
+        lista.innerHTML = '';
+      }
+    });
+  }
+  function getInsumoValue() {
+    return categoriaSeleccionada === "OTRO"
+      ? document.getElementById("insumoInput").value.trim()
+      : insumoSeleccionado;
+  }
+  function getCategoriaValue() {
+    return categoriaSeleccionada || document.getElementById("categoria").value || "OTRO";
+  }
   // === FUNCIONES PRINCIPALES ===
   function cargarConfiguraciones() {
     const unidades = JSON.parse(localStorage.getItem("unidades")) || ["kg", "g", "unid", "lt", "ml", "paquete", "lata", "bolsa"];
@@ -550,30 +696,22 @@
     return { unidades, almacenes, columnasVisibles };
   }
   let config = cargarConfiguraciones();
-  // ✅ CORRECCIÓN: Convertir fechas de string a Date al cargar
   let inventario = JSON.parse(localStorage.getItem("inventario")) || [];
-  inventario = inventario.map(item => {
-    if (item.fechaVencimiento && typeof item.fechaVencimiento === 'string') {
-      const fechaV = new Date(item.fechaVencimiento);
-      item.fechaVencimiento = isNaN(fechaV.getTime()) ? null : fechaV;
-    }
-    if (item.fechaIngreso && typeof item.fechaIngreso === 'string') {
-      const fechaI = new Date(item.fechaIngreso);
-      item.fechaIngreso = isNaN(fechaI.getTime()) ? null : fechaI;
-    }
-    return item;
-  });
+  // ✅ NO convertir a Date. Mantener como cadenas "YYYY-MM-DD"
+  // El inventario ya está listo para usarse
+
   let modoEdicion = false;
-  let ordenInventario = 'asc';
-  let ordenImpulsados = 'asc';
-  // Formatear fecha como DD/MM/YYYY
+
+  // ✅ FUNCIÓN CORREGIDA: Conversión directa de "YYYY-MM-DD" a "dd/mm/yyyy"
   function formatearFecha(fecha) {
     if (!fecha) return "N/A";
-    if (typeof fecha === 'string') {
-      const [a, m, d] = fecha.split('-');
-      return `${d}/${m}/${a}`;
+    // Si es una cadena en formato YYYY-MM-DD
+    if (typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      const [y, m, d] = fecha.split('-');
+      return `${d}/${m}/${y}`;
     }
-    if (fecha instanceof Date && !isNaN(fecha)) {
+    // Si por alguna razón es un objeto Date (retrocompatibilidad)
+    if (fecha instanceof Date && !isNaN(fecha.getTime())) {
       const day = String(fecha.getDate()).padStart(2, '0');
       const month = String(fecha.getMonth() + 1).padStart(2, '0');
       const year = fecha.getFullYear();
@@ -581,7 +719,8 @@
     }
     return "N/A";
   }
-  // === CALENDARIO SEMANAL VERTICAL ===
+
+  // === CALENDARIO ===
   let fechaInicioSemana = new Date();
   fechaInicioSemana.setHours(0, 0, 0, 0);
   const diaHoy = fechaInicioSemana.getDay();
@@ -602,8 +741,8 @@
     titulo.textContent = obtenerRangoSemana(fechaInicioSemana);
     const porFecha = {};
     inventario.forEach(item => {
-      if (item.fechaVencimiento) {
-        const key = item.fechaVencimiento.toISOString().split('T')[0];
+      if (item.fechaVencimiento && typeof item.fechaVencimiento === 'string') {
+        const key = item.fechaVencimiento; // "YYYY-MM-DD"
         if (!porFecha[key]) porFecha[key] = [];
         porFecha[key].push(item);
       }
@@ -616,7 +755,7 @@
       const fecha = new Date(fechaInicioSemana);
       fecha.setDate(fechaInicioSemana.getDate() + i);
       const esHoy = fecha.toDateString() === hoy.toDateString();
-      const fechaKey = fecha.toISOString().split('T')[0];
+      const fechaKey = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
       const tieneEventos = porFecha[fechaKey] && porFecha[fechaKey].length > 0;
       let eventosHtml = '';
       if (tieneEventos) {
@@ -641,18 +780,22 @@
     fechaInicioSemana.setDate(fechaInicioSemana.getDate() + dias);
     renderizarCalendario();
   }
-  // === Resto de funciones ===
+  // === RESTO DE FUNCIONES ===
   function calcularEstadoYDias(item) {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     let estado = "empaque";
     let diasRestantes = null;
-    if (item.fechaVencimiento instanceof Date && !isNaN(item.fechaVencimiento)) {
-      const diffTime = item.fechaVencimiento.getTime() - hoy.getTime();
-      diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diasRestantes > 0) estado = "ok";
-      else if (diasRestantes === 0) estado = "hoy";
-      else estado = "vencido";
+    if (item.fechaVencimiento && typeof item.fechaVencimiento === 'string') {
+      const [y, m, d] = item.fechaVencimiento.split('-').map(Number);
+      const fechaV = new Date(y, m - 1, d);
+      if (!isNaN(fechaV.getTime())) {
+        const diffTime = fechaV.getTime() - hoy.getTime();
+        diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diasRestantes > 0) estado = "ok";
+        else if (diasRestantes === 0) estado = "hoy";
+        else estado = "vencido";
+      }
     }
     return { estado, diasRestantes };
   }
@@ -690,40 +833,21 @@
     aplicarFiltros();
   }
   document.getElementById("categoria").addEventListener("change", function () {
-    toggleInsumoInput();
+    const cat = this.value;
+    if (cat === "OTRO") {
+      document.getElementById("busquedaGlobal").value = "";
+      document.getElementById("insumoInput").style.display = "block";
+      insumoSeleccionado = null;
+      categoriaSeleccionada = "OTRO";
+    } else {
+      document.getElementById("insumoInput").style.display = "none";
+    }
     verificarMostrarFechaManual();
   });
-  document.getElementById("insumoSelect").addEventListener("change", verificarMostrarFechaManual);
   document.getElementById("etapa").addEventListener("change", verificarMostrarFechaManual);
-  function toggleInsumoInput() {
-    const cat = document.getElementById("categoria").value;
-    const select = document.getElementById("insumoSelect");
-    const input = document.getElementById("insumoInput");
-    select.innerHTML = '<option value="">-- Seleccionar --</option>';
-    if (cat === "OTRO") {
-      select.style.display = "none";
-      input.style.display = "block";
-      input.required = true;
-      select.required = false;
-    } else {
-      input.style.display = "none";
-      select.style.display = "block";
-      input.required = false;
-      select.required = true;
-      select.disabled = !cat;
-      if (cat && db[cat]) {
-        Object.keys(db[cat]).forEach(nombre => {
-          const opt = document.createElement("option");
-          opt.value = nombre;
-          opt.textContent = nombre;
-          select.appendChild(opt);
-        });
-      }
-    }
-  }
   function verificarMostrarFechaManual() {
-    const cat = document.getElementById("categoria").value;
-    const insumo = cat === "OTRO" ? document.getElementById("insumoInput").value : document.getElementById("insumoSelect").value;
+    const cat = getCategoriaValue();
+    const insumo = getInsumoValue();
     const etapa = document.getElementById("etapa").value;
     let mostrar = false;
     if (cat === "OTRO") {
@@ -735,11 +859,6 @@
       }
     }
     document.getElementById("fechaVencimientoManual").style.display = mostrar ? "block" : "none";
-  }
-  function getInsumoValue() {
-    return document.getElementById("categoria").value === "OTRO"
-      ? document.getElementById("insumoInput").value.trim()
-      : document.getElementById("insumoSelect").value;
   }
   function calcularFechaVencimiento(categoria, insumo, etapa, fechaIngresoStr, fechaManualStr) {
     if (fechaManualStr) {
@@ -773,16 +892,19 @@
   function limpiarFormularioCompleto() {
     document.getElementById("formulario").reset();
     document.getElementById("registroId").value = "";
+    insumoSeleccionado = null;
+    categoriaSeleccionada = null;
     document.getElementById("tituloForm").textContent = "Registrar Insumo";
     document.getElementById("formSection").classList.remove("modo-edicion");
     document.getElementById("btnCancelar").style.display = "none";
-    document.getElementById("insumoSelect").disabled = true;
+    document.getElementById("busquedaGlobal").value = "";
+    document.getElementById("insumoInput").style.display = "none";
     document.getElementById("fechaVencimientoManual").style.display = "none";
     cargarSelectsConfig();
   }
   function guardarRegistro() {
     const id = document.getElementById("registroId").value;
-    const cat = document.getElementById("categoria").value;
+    const cat = getCategoriaValue();
     const insumo = getInsumoValue();
     const etapa = document.getElementById("etapa").value;
     const almacenamiento = document.getElementById("almacenamiento").value || "-";
@@ -790,14 +912,10 @@
     const fechaManual = document.getElementById("fechaVencimientoManual").value;
     const cantidad = parseFloat(document.getElementById("cantidad").value);
     const unidad = document.getElementById("unidad").value;
-
-    // Validaciones básicas
     if (!cat || !insumo || !etapa || !cantidad || !unidad) {
       alert("Complete todos los campos obligatorios.");
       return;
     }
-
-    // Determinar si "Fecha de Ingreso" es obligatoria
     let fechaIngresoObligatoria = true;
     if (cat !== "OTRO" && etapa === "RECIBIDO" && db[cat] && db[cat][insumo]) {
       const vidaUtil = db[cat][insumo]["RECIBIDO"];
@@ -805,14 +923,16 @@
         fechaIngresoObligatoria = false;
       }
     }
-
     if (fechaIngresoObligatoria && !fechaIngreso) {
       alert("Debe ingresar la fecha de ingreso.");
       return;
     }
-
-    // Calcular fecha de vencimiento
-    const fechaVencimiento = calcularFechaVencimiento(cat, insumo, etapa, fechaIngreso, fechaManual);
+    const fechaVencimientoObj = calcularFechaVencimiento(cat, insumo, etapa, fechaIngreso, fechaManual);
+    // ✅ Guardar fechas como cadenas "YYYY-MM-DD"
+    const fechaIngresoStr = fechaIngreso || null;
+    const fechaVencimientoStr = fechaVencimientoObj
+      ? `${fechaVencimientoObj.getFullYear()}-${String(fechaVencimientoObj.getMonth() + 1).padStart(2, '0')}-${String(fechaVencimientoObj.getDate()).padStart(2, '0')}`
+      : null;
 
     const registro = {
       id: modoEdicion && id ? parseInt(id) : Date.now(),
@@ -820,21 +940,19 @@
       insumo,
       etapa,
       almacenamiento,
-      fechaIngreso: fechaIngreso || null,
-      fechaVencimiento,
+      fechaIngreso: fechaIngresoStr,
+      fechaVencimiento: fechaVencimientoStr,
       cantidad,
       unidad,
       fechaVencimientoManual: fechaManual || null,
       impulsado: false
     };
-
     if (modoEdicion && id) {
       const index = inventario.findIndex(item => item.id == id);
       if (index !== -1) inventario[index] = registro;
     } else {
       inventario.push(registro);
     }
-
     localStorage.setItem("inventario", JSON.stringify(inventario));
     renderizarVistas();
     limpiarFormularioCompleto();
@@ -847,14 +965,19 @@
     document.getElementById("registroId").value = item.id;
     document.getElementById("formSection").classList.add("modo-edicion");
     document.getElementById("btnCancelar").style.display = "inline-block";
-    document.getElementById("categoria").value = item.categoria;
-    toggleInsumoInput();
+    if (item.categoria === "OTRO") {
+      document.getElementById("busquedaGlobal").value = "";
+      document.getElementById("insumoInput").style.display = "block";
+      document.getElementById("insumoInput").value = item.insumo;
+      categoriaSeleccionada = "OTRO";
+    } else {
+      document.getElementById("busquedaGlobal").value = item.insumo;
+      insumoSeleccionado = item.insumo;
+      categoriaSeleccionada = item.categoria;
+      document.getElementById("categoria").value = item.categoria;
+      document.getElementById("insumoInput").style.display = "none";
+    }
     setTimeout(() => {
-      if (item.categoria === "OTRO") {
-        document.getElementById("insumoInput").value = item.insumo;
-      } else {
-        document.getElementById("insumoSelect").value = item.insumo;
-      }
       document.getElementById("etapa").value = item.etapa;
       document.getElementById("almacenamiento").value = item.almacenamiento;
       document.getElementById("fechaIngreso").value = item.fechaIngreso;
@@ -893,14 +1016,6 @@
       renderizarTabla();
     }
   }
-  function ordenarInventario(orden) {
-    ordenInventario = orden;
-    aplicarFiltros();
-  }
-  function ordenarImpulsados(orden) {
-    ordenImpulsados = orden;
-    renderizarTablaImpulsados();
-  }
   function aplicarFiltros() {
     let filtrados = inventario;
     if (almacenFiltrado) {
@@ -911,19 +1026,17 @@
   function renderizarTabla(filtrados = null) {
     const data = filtrados !== null ? filtrados : inventario;
     const ordenados = [...data].sort((a, b) => {
-      const fechaA = a.fechaVencimiento || new Date(8640000000000000);
-      const fechaB = b.fechaVencimiento || new Date(8640000000000000);
-      return ordenInventario === 'asc' ? fechaA - fechaB : fechaB - fechaA;
+      const fechaA = a.fechaVencimiento || "9999-12-31";
+      const fechaB = b.fechaVencimiento || "9999-12-31";
+      return fechaA.localeCompare(fechaB); // Orden lexicográfico seguro
     });
     const tbody = document.getElementById("cuerpoTabla");
     tbody.innerHTML = "";
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
     ordenados.forEach(item => {
       let fechaVencimientoStr = "N/A";
       let claseEstado = "";
       let etiquetaManual = "";
-      if (item.fechaVencimiento instanceof Date && !isNaN(item.fechaVencimiento)) {
+      if (item.fechaVencimiento) {
         fechaVencimientoStr = formatearFecha(item.fechaVencimiento);
         if (item.fechaVencimientoManual) {
           etiquetaManual = ' <span class="manual-tag">📅</span>';
@@ -959,23 +1072,22 @@
     const mensaje = document.getElementById("mensajeVacioImpulsados");
     tbody.innerHTML = "";
     let impulsados = inventario.filter(item => item.impulsado);
+    // Orden ascendente automático (más próximos primero)
     impulsados = [...impulsados].sort((a, b) => {
-      const fechaA = a.fechaVencimiento || new Date(8640000000000000);
-      const fechaB = b.fechaVencimiento || new Date(8640000000000000);
-      return ordenImpulsados === 'asc' ? fechaA - fechaB : fechaB - fechaA;
+      const fechaA = a.fechaVencimiento || "9999-12-31";
+      const fechaB = b.fechaVencimiento || "9999-12-31";
+      return fechaA.localeCompare(fechaB);
     });
     if (impulsados.length === 0) {
       mensaje.style.display = "block";
       return;
     }
     mensaje.style.display = "none";
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
     impulsados.forEach(item => {
       let fechaVencimientoStr = "N/A";
       let claseEstado = "";
       let etiquetaManual = "";
-      if (item.fechaVencimiento instanceof Date && !isNaN(item.fechaVencimiento)) {
+      if (item.fechaVencimiento) {
         fechaVencimientoStr = formatearFecha(item.fechaVencimiento);
         if (item.fechaVencimientoManual) {
           etiquetaManual = ' <span class="manual-tag">📅</span>';
@@ -1043,7 +1155,6 @@
     const col = config.columnasVisibles;
     const ths = document.querySelectorAll("#tablaInventario th");
     const tds = document.querySelectorAll("#tablaInventario td");
-    // Índices: 0=insumo, 1=etapa, 2=F.Ingreso, 3=F.Venc, 4=Cant, 5=U/M, 6=Almac, 7=Días, 8=Acciones
     const visibilidad = [
       col.insumo,
       col.etapa,
@@ -1147,6 +1258,7 @@
       document.getElementById("btnInventario").classList.add("active");
       cargarSelectsConfig();
       renderizarBotonesAlmacenes();
+      initAutocompletado();
     } else if (vista === "impulsados") {
       document.getElementById("vistaImpulsados").classList.add("active-view");
       document.getElementById("btnImpulsados").classList.add("active");
