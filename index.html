@@ -8,7 +8,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-  <!-- ✅ Librería para tablas en PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <style>
     :root {
@@ -241,6 +240,29 @@
       border: 2px solid #4CAF50;
       font-weight: bold;
     }
+    /* Modal de edición */
+    #modalFormulario {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    #modalFormulario .modal-content {
+      background: white;
+      width: 95%;
+      max-width: 600px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 16px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
     @media (max-width: 768px) {
       .ocultar-movil {
         display: none;
@@ -264,6 +286,7 @@
   <button onclick="cambiarVista('impulsados')" id="btnImpulsados">🎯 Por Impulsar</button>
   <button onclick="cambiarVista('configuraciones')" id="btnConfig">⚙️ Configuración</button>
 </div>
+
 <!-- === INVENTARIO === -->
 <div id="vistaInventario" class="container">
   <h2 id="tituloForm">Registrar Insumo</h2>
@@ -323,7 +346,6 @@
       </div>
     </form>
   </div>
-  <!-- Botones de almacenes -->
   <div class="form-section">
     <div class="almacenes-buttons" id="botonesAlmacenes"></div>
   </div>
@@ -350,10 +372,70 @@
     </table>
   </div>
 </div>
-<!-- === POR IMPULSAR === -->
+
+<!-- === MODAL DE EDICIÓN === -->
+<div id="modalFormulario">
+  <div class="modal-content">
+    <h3 style="text-align:center; margin-bottom:12px;">✏️ Editar Insumo</h3>
+    <form id="formularioModal">
+      <input type="hidden" id="registroIdModal" />
+      <!-- SECCIÓN 1: DATOS DEL INSUMO -->
+      <div class="form-group">
+        <div class="form-group-title">1. Datos del insumo</div>
+        <label for="categoriaModal">Categoría</label>
+        <select id="categoriaModal">
+          <option value="">-- Todas las categorías --</option>
+          <option value="CÁRNICOS EN TROZOS Y RODAJAS">Cárnicos</option>
+          <option value="QUESOS">Quesos</option>
+          <option value="FRUTAS Y VEGETALES">Frutas y Vegetales</option>
+          <option value="SALSAS">Salsas</option>
+          <option value="OTROS INSUMOS">Otros Insumos</option>
+          <option value="PREPS">Preparaciones (PREPS)</option>
+          <option value="OTRO">Otro (escribir)</option>
+        </select>
+        <label for="busquedaGlobalModal">Insumo</label>
+        <div class="autocomplete">
+          <input type="text" id="busquedaGlobalModal" placeholder="Escriba para buscar..." autocomplete="off" />
+          <div class="autocomplete-items" id="listaAutocompletadoModal"></div>
+        </div>
+        <input type="text" id="insumoInputModal" placeholder="Nombre del insumo" style="display:none; margin-top:8px;" />
+      </div>
+      <!-- SECCIÓN 2: GESTIÓN OPERATIVA -->
+      <div class="form-group">
+        <div class="form-group-title">2. Gestión operativa</div>
+        <label for="etapaModal">Etapa</label>
+        <select id="etapaModal" required>
+          <option value="">-- Seleccionar --</option>
+          <option value="RECIBIDO">Recibido</option>
+          <option value="PREPARADO">Preparado</option>
+          <option value="LINEA">En Línea</option>
+        </select>
+        <label for="almacenamientoModal">Almacenamiento</label>
+        <select id="almacenamientoModal"></select>
+        <label for="fechaIngresoModal">F. Ingreso</label>
+        <input type="date" id="fechaIngresoModal" />
+        <label for="fechaVencimientoManualModal">F. Venc. Manual (si aplica)</label>
+        <input type="date" id="fechaVencimientoManualModal" />
+      </div>
+      <!-- SECCIÓN 3: CANTIDAD Y UNIDAD -->
+      <div class="form-group">
+        <div class="form-group-title">3. Cantidad y unidad</div>
+        <label for="cantidadModal">Cant.</label>
+        <input type="number" id="cantidadModal" min="0.1" step="0.1" required />
+        <label for="unidadModal">U/M</label>
+        <select id="unidadModal" required></select>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 12px; justify-content: center;">
+        <button type="button" onclick="guardarDesdeModal()">Guardar</button>
+        <button type="button" onclick="cerrarModal()" class="secondary">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- === VISTAS RESTANTES === -->
 <div id="vistaImpulsados" class="container">
   <h2>🎯 Por Impulsar</h2>
-  <!-- ⚠️ Botones de orden eliminados -->
   <div style="margin: 12px 0; display:flex; gap:8px; flex-wrap:wrap;">
     <button onclick="exportarPDF('impulsados')" class="export">📄 PDF</button>
     <button onclick="exportarExcel('impulsados')" class="export">xlsx</button>
@@ -378,7 +460,7 @@
     No hay insumos marcados para impulsar.
   </div>
 </div>
-<!-- === CALENDARIO SEMANAL VERTICAL === -->
+
 <div id="vistaCalendario" class="container">
   <h2>📅 Calendario de Vencimientos</h2>
   <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -388,7 +470,7 @@
   </div>
   <div id="calendarioVertical"></div>
 </div>
-<!-- === CONFIGURACIONES === -->
+
 <div id="vistaConfiguraciones" class="container">
   <h2>⚙️ Configuraciones</h2>
   <div style="margin-bottom:16px; display:flex; gap:8px; flex-wrap:wrap;">
@@ -418,8 +500,8 @@
     <button onclick="guardarConfiguracionColumnas()" style="margin-top:12px; padding:6px 12px; font-size:13px;">💾 Guardar configuración</button>
   </div>
 </div>
+
 <script>
-  // === LIBRERÍAS ===
   const { jsPDF } = window.jspdf;
   // === BASE DE DATOS FIJA (DATA MOD) ===
   const db = {
@@ -495,14 +577,14 @@
       "Rollitos de Canela": { RECIBIDO: null, PREPARADO: "6 horas", LINEA: "6 horas" }
     }
   };
-  // === ÍNDICE GLOBAL DE INSUMOS ===
   const indiceGlobal = [];
   for (const categoria in db) {
     for (const insumo in db[categoria]) {
       indiceGlobal.push({ insumo, categoria });
     }
   }
-  // === FUNCIONES DE EXPORTACIÓN ===
+
+  // === FUNCIONES DE EXPORTACIÓN (OMITIDAS POR ESPACIO, PERO LAS CONSERVA) ===
   function exportarPDF(tipo) {
     const titulo = tipo === 'inventario' ? 'Inventario de Insumos' : 'Insumos por Impulsar';
     const columnas = tipo === 'inventario'
@@ -510,11 +592,10 @@
       : ["Insumo", "F. Venc.", "Cant.", "U/M", "Almac.", "Días Rest."];
     const datos = [];
     const filtrar = tipo === 'inventario' ? inventario : inventario.filter(i => i.impulsado);
-    // Ordenar por fecha de vencimiento (más próximos primero)
     const filas = [...filtrar].sort((a, b) => {
       const fechaA = a.fechaVencimiento || new Date(8640000000000000);
       const fechaB = b.fechaVencimiento || new Date(8640000000000000);
-      return fechaA - fechaB; // siempre ascendente para PDF
+      return fechaA - fechaB;
     });
     filas.forEach(item => {
       if (tipo === 'inventario') {
@@ -548,8 +629,7 @@
       body: datos,
       theme: 'grid',
       headStyles: { fillColor: [76, 175, 80] },
-      styles: { fontSize: 10, cellPadding: 3 },
-      columnStyles: { 0: { cellWidth: 'auto' } }
+      styles: { fontSize: 10, cellPadding: 3 }
     });
     doc.save(`${titulo.replace(/\s+/g, '_')}.pdf`);
   }
@@ -610,6 +690,7 @@
     reader.readAsText(file);
     event.target.value = '';
   }
+
   // === AUTOCOMPLETADO GLOBAL ===
   let insumoSeleccionado = null;
   let categoriaSeleccionada = null;
@@ -667,6 +748,7 @@
       }
     });
   }
+
   function getInsumoValue() {
     return categoriaSeleccionada === "OTRO"
       ? document.getElementById("insumoInput").value.trim()
@@ -675,6 +757,7 @@
   function getCategoriaValue() {
     return categoriaSeleccionada || document.getElementById("categoria").value || "OTRO";
   }
+
   // === FUNCIONES PRINCIPALES ===
   function cargarConfiguraciones() {
     const unidades = JSON.parse(localStorage.getItem("unidades")) || ["kg", "g", "unid", "lt", "ml", "paquete", "lata", "bolsa"];
@@ -697,20 +780,14 @@
   }
   let config = cargarConfiguraciones();
   let inventario = JSON.parse(localStorage.getItem("inventario")) || [];
-  // ✅ NO convertir a Date. Mantener como cadenas "YYYY-MM-DD"
-  // El inventario ya está listo para usarse
-
   let modoEdicion = false;
 
-  // ✅ FUNCIÓN CORREGIDA: Conversión directa de "YYYY-MM-DD" a "dd/mm/yyyy"
   function formatearFecha(fecha) {
     if (!fecha) return "N/A";
-    // Si es una cadena en formato YYYY-MM-DD
     if (typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
       const [y, m, d] = fecha.split('-');
       return `${d}/${m}/${y}`;
     }
-    // Si por alguna razón es un objeto Date (retrocompatibilidad)
     if (fecha instanceof Date && !isNaN(fecha.getTime())) {
       const day = String(fecha.getDate()).padStart(2, '0');
       const month = String(fecha.getMonth() + 1).padStart(2, '0');
@@ -726,6 +803,7 @@
   const diaHoy = fechaInicioSemana.getDay();
   const ajusteALunes = diaHoy === 0 ? -6 : 1 - diaHoy;
   fechaInicioSemana.setDate(fechaInicioSemana.getDate() + ajusteALunes);
+
   function obtenerRangoSemana(fechaLunes) {
     const inicio = new Date(fechaLunes);
     const fin = new Date(fechaLunes);
@@ -736,13 +814,14 @@
     const anio = inicio.getFullYear();
     return `${inicioStr} – ${finStr} ${anio}`;
   }
+
   function renderizarCalendario() {
     const titulo = document.getElementById("tituloSemana");
     titulo.textContent = obtenerRangoSemana(fechaInicioSemana);
     const porFecha = {};
     inventario.forEach(item => {
       if (item.fechaVencimiento && typeof item.fechaVencimiento === 'string') {
-        const key = item.fechaVencimiento; // "YYYY-MM-DD"
+        const key = item.fechaVencimiento;
         if (!porFecha[key]) porFecha[key] = [];
         porFecha[key].push(item);
       }
@@ -775,12 +854,14 @@
       container.appendChild(diaElement);
     }
   }
+
   function cambiarSemana(delta) {
     const dias = delta * 7;
     fechaInicioSemana.setDate(fechaInicioSemana.getDate() + dias);
     renderizarCalendario();
   }
-  // === RESTO DE FUNCIONES ===
+
+  // === FUNCIÓN aux: calcular estado y días restantes ===
   function calcularEstadoYDias(item) {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -799,6 +880,169 @@
     }
     return { estado, diasRestantes };
   }
+
+  // === FUNCIÓN para cargar selects en el modal ===
+  function cargarSelectsConfigModal() {
+    const selUnidad = document.getElementById("unidadModal");
+    const selAlmacen = document.getElementById("almacenamientoModal");
+    selUnidad.innerHTML = '<option value="">-- Seleccionar --</option>';
+    selAlmacen.innerHTML = '<option value="">-- Seleccionar --</option>';
+    config.unidades.forEach(u => {
+      const opt = document.createElement("option");
+      opt.value = u;
+      opt.textContent = u;
+      selUnidad.appendChild(opt);
+    });
+    config.almacenes.forEach(a => {
+      const opt = document.createElement("option");
+      opt.value = a;
+      opt.textContent = a;
+      selAlmacen.appendChild(opt);
+    });
+  }
+
+  function verificarMostrarFechaManualModal() {
+    const cat = document.getElementById("categoriaModal").value;
+    const insumo = cat === "OTRO" ? document.getElementById("insumoInputModal").value.trim() : document.getElementById("busquedaGlobalModal").value.trim();
+    const etapa = document.getElementById("etapaModal").value;
+    let mostrar = false;
+    if (cat === "OTRO") {
+      mostrar = true;
+    } else if (cat && insumo && etapa && db[cat] && db[cat][insumo]) {
+      const vidaUtil = db[cat][insumo][etapa];
+      if (vidaUtil === "Según empaque" || vidaUtil === null || vidaUtil === undefined) {
+        mostrar = true;
+      }
+    }
+    document.getElementById("fechaVencimientoManualModal").style.display = mostrar ? "block" : "none";
+  }
+
+  function calcularFechaVencimiento(categoria, insumo, etapa, fechaIngresoStr, fechaManualStr) {
+    if (fechaManualStr) {
+      const [a, m, d] = fechaManualStr.split('-').map(Number);
+      return new Date(a, m - 1, d);
+    }
+    if (categoria === "OTRO") return null;
+    if (!db[categoria] || !db[categoria][insumo]) return null;
+    const info = db[categoria][insumo];
+    const vidaUtil = info[etapa];
+    if (!vidaUtil || vidaUtil === "Según empaque") return null;
+    if (typeof vidaUtil === "string" && vidaUtil.includes("horas")) {
+      const horas = parseInt(vidaUtil);
+      const [a, m, d] = fechaIngresoStr.split('-').map(Number);
+      const fecha = new Date(a, m - 1, d);
+      fecha.setHours(fecha.getHours() + horas);
+      return fecha;
+    } else if (vidaUtil === "11:59 p. m.") {
+      const [a, m, d] = fechaIngresoStr.split('-').map(Number);
+      const fecha = new Date(a, m - 1, d);
+      fecha.setHours(23, 59, 0, 0);
+      return fecha;
+    } else {
+      const dias = parseInt(vidaUtil);
+      const [a, m, d] = fechaIngresoStr.split('-').map(Number);
+      const fecha = new Date(a, m - 1, d);
+      fecha.setDate(fecha.getDate() + dias);
+      return fecha;
+    }
+  }
+
+  // === MODAL: guardar desde modal ===
+  function guardarDesdeModal() {
+    const id = document.getElementById("registroIdModal").value;
+    const cat = document.getElementById("categoriaModal").value === "OTRO"
+      ? "OTRO"
+      : document.getElementById("categoriaModal").value;
+    const insumo = cat === "OTRO"
+      ? document.getElementById("insumoInputModal").value.trim()
+      : document.getElementById("busquedaGlobalModal").value.trim();
+    const etapa = document.getElementById("etapaModal").value;
+    const almacenamiento = document.getElementById("almacenamientoModal").value || "-";
+    const fechaIngreso = document.getElementById("fechaIngresoModal").value;
+    const fechaManual = document.getElementById("fechaVencimientoManualModal").value;
+    const cantidad = parseFloat(document.getElementById("cantidadModal").value);
+    const unidad = document.getElementById("unidadModal").value;
+
+    if (!cat || !insumo || !etapa || !cantidad || !unidad) {
+      alert("Complete todos los campos obligatorios.");
+      return;
+    }
+
+    let fechaIngresoObligatoria = true;
+    if (cat !== "OTRO" && etapa === "RECIBIDO" && db[cat] && db[cat][insumo]) {
+      const vidaUtil = db[cat][insumo]["RECIBIDO"];
+      if (vidaUtil === "Según empaque") {
+        fechaIngresoObligatoria = false;
+      }
+    }
+    if (fechaIngresoObligatoria && !fechaIngreso) {
+      alert("Debe ingresar la fecha de ingreso.");
+      return;
+    }
+
+    const fechaVencimientoObj = calcularFechaVencimiento(cat, insumo, etapa, fechaIngreso, fechaManual);
+    const fechaIngresoStr = fechaIngreso || null;
+    const fechaVencimientoStr = fechaVencimientoObj
+      ? `${fechaVencimientoObj.getFullYear()}-${String(fechaVencimientoObj.getMonth() + 1).padStart(2, '0')}-${String(fechaVencimientoObj.getDate()).padStart(2, '0')}`
+      : null;
+
+    const registro = {
+      id: parseInt(id),
+      categoria: cat,
+      insumo,
+      etapa,
+      almacenamiento,
+      fechaIngreso: fechaIngresoStr,
+      fechaVencimiento: fechaVencimientoStr,
+      cantidad,
+      unidad,
+      fechaVencimientoManual: fechaManual || null,
+      impulsado: inventario.find(i => i.id == id)?.impulsado || false
+    };
+
+    const index = inventario.findIndex(item => item.id == id);
+    if (index !== -1) inventario[index] = registro;
+    localStorage.setItem("inventario", JSON.stringify(inventario));
+    renderizarVistas();
+    cerrarModal();
+  }
+
+  // === MODAL: cerrar ===
+  function cerrarModal() {
+    document.getElementById("modalFormulario").style.display = "none";
+  }
+
+  // === NUEVA FUNCIÓN EDITAR CON MODAL ===
+  function editarRegistro(id) {
+    const item = inventario.find(i => i.id == id);
+    if (!item) return;
+
+    cargarSelectsConfigModal();
+    document.getElementById("modalFormulario").style.display = "flex";
+
+    document.getElementById("registroIdModal").value = item.id;
+    if (item.categoria === "OTRO") {
+      document.getElementById("categoriaModal").value = "OTRO";
+      document.getElementById("busquedaGlobalModal").value = "";
+      document.getElementById("insumoInputModal").style.display = "block";
+      document.getElementById("insumoInputModal").value = item.insumo;
+    } else {
+      document.getElementById("categoriaModal").value = item.categoria;
+      document.getElementById("busquedaGlobalModal").value = item.insumo;
+      document.getElementById("insumoInputModal").style.display = "none";
+    }
+
+    document.getElementById("etapaModal").value = item.etapa;
+    document.getElementById("almacenamientoModal").value = item.almacenamiento;
+    document.getElementById("fechaIngresoModal").value = item.fechaIngreso || "";
+    document.getElementById("fechaVencimientoManualModal").value = item.fechaVencimientoManual || "";
+    document.getElementById("cantidadModal").value = item.cantidad;
+    document.getElementById("unidadModal").value = item.unidad;
+
+    verificarMostrarFechaManualModal();
+  }
+
+  // === FUNCIONES RESTANTES (SIN CAMBIOS) ===
   function cargarSelectsConfig() {
     const selUnidad = document.getElementById("unidad");
     const selAlmacen = document.getElementById("almacenamiento");
@@ -860,35 +1104,6 @@
     }
     document.getElementById("fechaVencimientoManual").style.display = mostrar ? "block" : "none";
   }
-  function calcularFechaVencimiento(categoria, insumo, etapa, fechaIngresoStr, fechaManualStr) {
-    if (fechaManualStr) {
-      const [a, m, d] = fechaManualStr.split('-').map(Number);
-      return new Date(a, m - 1, d);
-    }
-    if (categoria === "OTRO") return null;
-    if (!db[categoria] || !db[categoria][insumo]) return null;
-    const info = db[categoria][insumo];
-    const vidaUtil = info[etapa];
-    if (!vidaUtil || vidaUtil === "Según empaque") return null;
-    if (typeof vidaUtil === "string" && vidaUtil.includes("horas")) {
-      const horas = parseInt(vidaUtil);
-      const [a, m, d] = fechaIngresoStr.split('-').map(Number);
-      const fecha = new Date(a, m - 1, d);
-      fecha.setHours(fecha.getHours() + horas);
-      return fecha;
-    } else if (vidaUtil === "11:59 p. m.") {
-      const [a, m, d] = fechaIngresoStr.split('-').map(Number);
-      const fecha = new Date(a, m - 1, d);
-      fecha.setHours(23, 59, 0, 0);
-      return fecha;
-    } else {
-      const dias = parseInt(vidaUtil);
-      const [a, m, d] = fechaIngresoStr.split('-').map(Number);
-      const fecha = new Date(a, m - 1, d);
-      fecha.setDate(fecha.getDate() + dias);
-      return fecha;
-    }
-  }
   function limpiarFormularioCompleto() {
     document.getElementById("formulario").reset();
     document.getElementById("registroId").value = "";
@@ -928,12 +1143,10 @@
       return;
     }
     const fechaVencimientoObj = calcularFechaVencimiento(cat, insumo, etapa, fechaIngreso, fechaManual);
-    // ✅ Guardar fechas como cadenas "YYYY-MM-DD"
     const fechaIngresoStr = fechaIngreso || null;
     const fechaVencimientoStr = fechaVencimientoObj
       ? `${fechaVencimientoObj.getFullYear()}-${String(fechaVencimientoObj.getMonth() + 1).padStart(2, '0')}-${String(fechaVencimientoObj.getDate()).padStart(2, '0')}`
       : null;
-
     const registro = {
       id: modoEdicion && id ? parseInt(id) : Date.now(),
       categoria: cat,
@@ -956,36 +1169,6 @@
     localStorage.setItem("inventario", JSON.stringify(inventario));
     renderizarVistas();
     limpiarFormularioCompleto();
-  }
-  function editarRegistro(id) {
-    const item = inventario.find(i => i.id == id);
-    if (!item) return;
-    modoEdicion = true;
-    document.getElementById("tituloForm").textContent = "Editar Insumo";
-    document.getElementById("registroId").value = item.id;
-    document.getElementById("formSection").classList.add("modo-edicion");
-    document.getElementById("btnCancelar").style.display = "inline-block";
-    if (item.categoria === "OTRO") {
-      document.getElementById("busquedaGlobal").value = "";
-      document.getElementById("insumoInput").style.display = "block";
-      document.getElementById("insumoInput").value = item.insumo;
-      categoriaSeleccionada = "OTRO";
-    } else {
-      document.getElementById("busquedaGlobal").value = item.insumo;
-      insumoSeleccionado = item.insumo;
-      categoriaSeleccionada = item.categoria;
-      document.getElementById("categoria").value = item.categoria;
-      document.getElementById("insumoInput").style.display = "none";
-    }
-    setTimeout(() => {
-      document.getElementById("etapa").value = item.etapa;
-      document.getElementById("almacenamiento").value = item.almacenamiento;
-      document.getElementById("fechaIngreso").value = item.fechaIngreso;
-      document.getElementById("fechaVencimientoManual").value = item.fechaVencimientoManual || "";
-      document.getElementById("cantidad").value = item.cantidad;
-      document.getElementById("unidad").value = item.unidad;
-      verificarMostrarFechaManual();
-    }, 20);
   }
   function cancelarEdicion() {
     limpiarFormularioCompleto();
@@ -1028,7 +1211,7 @@
     const ordenados = [...data].sort((a, b) => {
       const fechaA = a.fechaVencimiento || "9999-12-31";
       const fechaB = b.fechaVencimiento || "9999-12-31";
-      return fechaA.localeCompare(fechaB); // Orden lexicográfico seguro
+      return fechaA.localeCompare(fechaB);
     });
     const tbody = document.getElementById("cuerpoTabla");
     tbody.innerHTML = "";
@@ -1072,7 +1255,6 @@
     const mensaje = document.getElementById("mensajeVacioImpulsados");
     tbody.innerHTML = "";
     let impulsados = inventario.filter(item => item.impulsado);
-    // Orden ascendente automático (más próximos primero)
     impulsados = [...impulsados].sort((a, b) => {
       const fechaA = a.fechaVencimiento || "9999-12-31";
       const fechaB = b.fechaVencimiento || "9999-12-31";
@@ -1112,7 +1294,6 @@
       tbody.appendChild(fila);
     });
   }
-  // === CONFIGURACIÓN DE COLUMNAS ===
   function renderizarConfiguracionColumnas() {
     const contenedor = document.getElementById("columnasCheckboxes");
     contenedor.innerHTML = "";
@@ -1269,6 +1450,7 @@
       renderizarConfiguraciones();
     }
   }
+
   // Inicializar
   renderizarVistas();
   cambiarVista('calendario');
