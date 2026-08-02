@@ -1292,8 +1292,8 @@
                 const originalIndex = smallwares.indexOf(sw);
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><strong>${sw.id}</strong></td>
-                    <td>${sw.name}</td>
+                    <td><strong>${escapeHtml(sw.id)}</strong></td>
+                    <td>${escapeHtml(sw.name)}</td>
                     <td style="font-weight: bold; color: #6f42c1;">${sw.weight.toFixed(3)} KG</td>
                     <td>
                         <button class="btn-small btn-edit" onclick="editSmallware(${originalIndex})">✏️ Editar</button>
@@ -1332,6 +1332,10 @@
                 alert('⚠️ El ID y el nombre son obligatorios');
                 return;
             }
+            if (/['"]/.test(id)) {
+                alert('⚠️ El ID no puede contener comillas');
+                return;
+            }
             if (isNaN(weight) || weight < 0) {
                 alert('⚠️ Ingresa un peso de tara válido (número positivo)');
                 return;
@@ -1362,12 +1366,16 @@
 
         function deleteSmallware(index) {
             const sw = smallwares[index];
-            if (confirm(`¿Estás seguro de eliminar el smallware "${sw.name}" (${sw.id})?\n\nPeso: ${sw.weight.toFixed(3)} KG`)) {
+            const itemsUsingIt = items.filter(i => Array.isArray(i.smallwareIds) && i.smallwareIds.includes(sw.id));
+            const warning = itemsUsingIt.length > 0
+                ? `\n\n⚠️ ${itemsUsingIt.length} ítem(s) tienen este envase configurado y dejarán de mostrarlo como opción.`
+                : '';
+            if (confirm(`¿Estás seguro de eliminar el smallware "${sw.name}" (${sw.id})?\n\nPeso: ${sw.weight.toFixed(3)} KG${warning}`)) {
                 smallwares.splice(index, 1);
                 saveData();
                 renderSmallwareButtons();
                 renderSmallwares();
-                alert('✅ Smallware eliminado');
+                showToast('✅ Smallware eliminado');
             }
         }
 
@@ -1384,7 +1392,7 @@
             }
             container.innerHTML = list.map(sw => `
                 <button type="button" class="smallware-chip ${selectedSmallwares[sw.id] ? 'selected' : ''}" onclick="toggleSmallware('${sw.id}')">
-                    ${sw.name}<span class="chip-tara">Tara ${sw.weight.toFixed(3)} KG</span>
+                    ${escapeHtml(sw.name)}<span class="chip-tara">Tara ${sw.weight.toFixed(3)} KG</span>
                 </button>
             `).join('');
         }
@@ -1433,7 +1441,7 @@
                 return `
                     <div class="selected-smallware-row">
                         <div>
-                            <div class="sw-name">${sw.name}</div>
+                            <div class="sw-name">${escapeHtml(sw.name)}</div>
                             <div class="sw-tara">Tara ${sw.weight.toFixed(3)} KG c/u · Subtotal ${(sw.weight * qty).toFixed(3)} KG</div>
                         </div>
                         <div class="sw-qty-control">
@@ -1487,9 +1495,9 @@
                 const row = document.createElement('tr');
                 row.onclick = () => openItem(item);
                 row.innerHTML = `
-                    <td class="sheet-sticky-col">${item.material}</td>
-                    <td>${item.description}</td>
-                    <td>${item.frequency}</td>
+                    <td class="sheet-sticky-col">${escapeHtml(item.material)}</td>
+                    <td>${escapeHtml(item.description)}</td>
+                    <td>${escapeHtml(item.frequency)}</td>
                     <td><span class="sheet-status-pill ${isCounted ? 'sheet-status-counted' : 'sheet-status-pending'}">${isCounted ? '✅ Contado' : '⏳ Pendiente'}</span></td>
                     <td class="sheet-detail-text">${detailText}</td>
                     <td class="sheet-total ${total < 0 ? 'negative' : ''}">${totalText}</td>
@@ -1733,8 +1741,8 @@
                 boxes: previousBoxes + counters.boxes,
                 looseUnits: previousLoose + counters.looseUnits,
                 containers: previousContainers + totalContainerCount,
-                smallware: smallwareNames || (previousData ? previousData.smallware : ''),
-                smallwareLabel: smallwareLabel || (previousData ? previousData.smallwareLabel : ''),
+                smallware: smallwareNames || (previousData && previousData.smallware) || '',
+                smallwareLabel: smallwareLabel || (previousData && previousData.smallwareLabel) || '',
                 grossWeight: previousGross + grossWeight,
                 total: accumulatedTotal,
                 lastUpdate: new Date().toISOString()
@@ -1799,7 +1807,7 @@
                     <div class="item-history-row ${isProd ? 'production' : ''}">
                         <div class="item-history-row-main">
                             <div class="item-history-date">${dateText} · ${m.type}</div>
-                            <div>${m.details || ''}</div>
+                            <div>${escapeHtml(m.details || '')}</div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span class="item-history-qty" style="color: ${m.quantity < 0 ? '#dc3545' : '#28a745'};">${qtyText}</span>
@@ -2052,7 +2060,7 @@
             let html = '';
             Object.entries(allIngredients).forEach(([material, quantity]) => {
                 const item = items.find(i => i.material === material);
-                if (item) html += `<div class="summary-row"><span>${item.description}:</span><span style="color: #28a745; font-weight: bold;">+${quantity.toFixed(3)} ${item.um}</span></div>`;
+                if (item) html += `<div class="summary-row"><span>${escapeHtml(item.description)}:</span><span style="color: #28a745; font-weight: bold;">+${quantity.toFixed(3)} ${escapeHtml(item.um)}</span></div>`;
             });
             details.innerHTML = html;
         }
@@ -2131,25 +2139,15 @@
             }
             
             const record = productionRecords[recordIndex];
-            
-            Object.entries(record.ingredients).forEach(([material, quantity]) => {
-                const currentData = inventoryData[material];
-                if (currentData) {
-                    currentData.total = currentData.total - quantity;
-                    currentData.lastUpdate = new Date().toISOString();
-                    
-                    if (currentData.total <= 0) {
-                        delete inventoryData[material];
-                    }
-                }
-            });
-            
+            const affectedMaterials = Object.keys(record.ingredients);
+
             movements = movements.filter(m => m.productionId !== productionId);
+            affectedMaterials.forEach(material => recalculateItemTotal(material));
             productionRecords.splice(recordIndex, 1);
             
             saveData();
             renderProductionHistory();
-            alert('✅ Producción eliminada correctamente\nSe revertieron los insumos y se eliminó del historial');
+            showToast('✅ Producción eliminada y el inventario recalculado correctamente');
         }
 
         function renderProductionHistory() {
@@ -2213,7 +2211,7 @@
             }
             filteredItems.forEach((item) => {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td>${item.material}</td><td>${item.description}</td><td>${item.um}</td><td>${item.frequency}</td><td>${item.weighs ? 'SI' : 'NO'}</td><td><button class="btn-small btn-edit" onclick="editItem(${items.indexOf(item)})">✏️</button><button class="btn-small btn-delete" onclick="deleteItem(${items.indexOf(item)})">🗑️</button></td>`;
+                row.innerHTML = `<td>${escapeHtml(item.material)}</td><td>${escapeHtml(item.description)}</td><td>${escapeHtml(item.um)}</td><td>${escapeHtml(item.frequency)}</td><td>${item.weighs ? 'SI' : 'NO'}</td><td><button class="btn-small btn-edit" onclick="editItem(${items.indexOf(item)})">✏️</button><button class="btn-small btn-delete" onclick="deleteItem(${items.indexOf(item)})">🗑️</button></td>`;
                 tbody.appendChild(row);
             });
         }
@@ -2235,7 +2233,7 @@
             }
             container.innerHTML = smallwares.map(sw => `
                 <button type="button" class="smallware-chip ${modalSelectedSmallwareIds.includes(sw.id) ? 'selected' : ''}" onclick="toggleModalSmallware('${sw.id}')">
-                    ${sw.name}<span class="chip-tara">Tara ${sw.weight.toFixed(3)} KG</span>
+                    ${escapeHtml(sw.name)}<span class="chip-tara">Tara ${sw.weight.toFixed(3)} KG</span>
                 </button>
             `).join('');
         }
@@ -2306,15 +2304,16 @@
             const packagesPerBox = parseInt(document.getElementById('modal-packages-per-box').value) || 0;
 
             if (!material || !description) { alert('⚠️ Código y descripción obligatorios'); return; }
+            if (/[.#$\[\]/'"]/.test(material)) { alert('⚠️ El código de material no puede contener . # $ [ ] / \' "'); return; }
 
             const newItem = {
                 material, description, um, frequency, weighs, presentation,
-                unitsPerBox: weighs ? unitsPerBox : undefined,
-                weightPerUnit: weighs ? weightPerUnit : undefined,
-                weightPerBox: weighs ? (weightPerBox || (unitsPerBox * weightPerUnit)) : undefined,
-                unitsPerPackage: !weighs ? unitsPerPackage : undefined,
-                packagesPerBox: !weighs ? packagesPerBox : undefined,
-                smallwareIds: weighs ? [...modalSelectedSmallwareIds] : undefined
+                unitsPerBox: weighs ? unitsPerBox : null,
+                weightPerUnit: weighs ? weightPerUnit : null,
+                weightPerBox: weighs ? (weightPerBox || (unitsPerBox * weightPerUnit)) : null,
+                unitsPerPackage: !weighs ? unitsPerPackage : null,
+                packagesPerBox: !weighs ? packagesPerBox : null,
+                smallwareIds: weighs ? [...modalSelectedSmallwareIds] : null
             };
 
             if (editingItemIndex >= 0) { items[editingItemIndex] = newItem; alert('✅ Ítem actualizado'); }
@@ -2330,8 +2329,10 @@
         }
 
         function deleteItem(index) {
-            if (confirm('¿Eliminar este ítem?')) {
-                delete inventoryData[items[index].material];
+            if (confirm('¿Eliminar este ítem? Esto también borrará su historial de conteos.')) {
+                const material = items[index].material;
+                delete inventoryData[material];
+                movements = movements.filter(m => m.material !== material);
                 items.splice(index, 1);
                 saveData();
                 updateItemCounts();
@@ -2360,7 +2361,7 @@
                 const row = document.createElement('tr');
                 const displayValue = item.um === 'KG' || item.um === 'L' ? count.toFixed(3) : count;
                 const cellClass = count < 0 ? 'negative-stock' : '';
-                row.innerHTML = `<td>${item.material}</td><td>${item.description}</td><td>${item.um}</td><td class="${cellClass}">${displayValue}</td>`;
+                row.innerHTML = `<td>${escapeHtml(item.material)}</td><td>${escapeHtml(item.description)}</td><td>${escapeHtml(item.um)}</td><td class="${cellClass}">${displayValue}</td>`;
                 tbody.appendChild(row);
             });
             
@@ -2430,6 +2431,16 @@
             db.ref().update({ inventoryData, movements, items, productionRecords, smallwares })
                 .then(() => clearDirty())
                 .catch(() => { /* Sin conexión: queda marcado como pendiente y se reintenta al reconectar */ });
+        }
+
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         function showToast(message, type) {
