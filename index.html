@@ -10,6 +10,25 @@
         .container { max-width: 900px; margin: 0 auto; padding: 20px; }
         .screen { display: none; }
         .screen.active { display: block; }
+        #app-shell { display: flex; min-height: 100vh; }
+        #main-content { flex: 1; min-width: 0; }
+        #sidebar { display: none; width: 220px; flex-shrink: 0; background: #2c3e50; color: white; padding: 20px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+        #sidebar .sidebar-brand { padding: 0 20px 20px; font-weight: bold; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
+        #sidebar .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: rgba(255,255,255,0.75); text-decoration: none; cursor: pointer; font-size: 14px; font-weight: 600; border-left: 3px solid transparent; transition: all 0.15s; }
+        #sidebar .sidebar-link:hover { background: rgba(255,255,255,0.06); color: white; }
+        #sidebar .sidebar-link.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #28a745; }
+        #sidebar .sidebar-icon { font-size: 17px; width: 20px; text-align: center; }
+        #bottom-tabs { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e9ecef; box-shadow: 0 -2px 10px rgba(0,0,0,0.08); z-index: 1500; padding: 4px 0 env(safe-area-inset-bottom, 4px); }
+        #bottom-tabs .tab-link { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; color: #6c757d; cursor: pointer; font-size: 10.5px; font-weight: 700; border: none; background: none; }
+        #bottom-tabs .tab-link.active { color: #28a745; }
+        #bottom-tabs .tab-icon { font-size: 20px; }
+        body.logged-in #bottom-tabs { display: flex; }
+        body.logged-in #main-content { padding-bottom: 66px; }
+        @media (min-width: 900px) {
+            body.logged-in #sidebar { display: block; }
+            body.logged-in #bottom-tabs { display: none; }
+            body.logged-in #main-content { padding-bottom: 0; }
+        }
         .header { background: #2c3e50; color: white; padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 10px; }
         .header h1 { font-size: 24px; margin-bottom: 5px; }
         .header .date { font-size: 14px; opacity: 0.9; }
@@ -39,28 +58,30 @@
         .filters { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-btn { padding: 8px 15px; background: #e9ecef; border: none; border-radius: 20px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
         .filter-btn.active { background: #28a745; color: white; }
-        .item-list { max-height: 600px; overflow-y: auto; }
-        .item-card { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; margin: 6px 0; background: white; border-radius: 8px; border-left: 3px solid #e9ecef; cursor: pointer; transition: box-shadow 0.15s, transform 0.1s; }
-        .item-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .item-card:active { transform: scale(0.99); }
-        .item-card.counted { border-left-color: #28a745; }
-        .item-card.pending { border-left-color: #ffc107; }
-        .item-card-main { min-width: 0; flex: 1; }
-        .item-code { font-size: 10.5px; color: #adb5bd; font-weight: 700; letter-spacing: 0.3px; }
-        .item-name { font-size: 13.5px; font-weight: 600; color: #2c3e50; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .item-meta { font-size: 11px; color: #6c757d; margin-top: 2px; }
-        .item-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-        .status-badge { padding: 2px 9px; border-radius: 10px; font-size: 9.5px; font-weight: 700; white-space: nowrap; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-counted { background: #d4edda; color: #155724; }
-        .item-count-value { font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+        .sheet-wrap { overflow-x: auto; border: 1px solid #d7dce1; border-radius: 8px; margin-top: 10px; -webkit-overflow-scrolling: touch; }
+        .sheet-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: white; }
+        .sheet-table th { background: #2c3e50; color: white; text-align: left; padding: 10px 12px; position: sticky; top: 0; z-index: 2; white-space: nowrap; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .sheet-table td { padding: 9px 12px; border-bottom: 1px solid #edf0f2; white-space: nowrap; }
+        .sheet-table tbody tr { cursor: pointer; transition: background 0.1s; }
+        .sheet-table tbody tr:nth-child(even) { background: #fafbfc; }
+        .sheet-table tbody tr:hover { background: #eef4ff; }
+        .sheet-sticky-col { position: sticky; left: 0; background: inherit; z-index: 1; font-weight: 700; color: #2c3e50; }
+        .sheet-table th.sheet-sticky-col { z-index: 3; background: #2c3e50; }
+        .sheet-status-pill { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+        .sheet-status-pending { background: #fff3cd; color: #856404; }
+        .sheet-status-counted { background: #d4edda; color: #155724; }
+        .sheet-detail-text { color: #6c757d; font-size: 11.5px; }
+        .sheet-total { font-weight: 700; }
+        .sheet-total.negative { color: #dc3545; }
         .form-group { margin: 20px 0; }
         .form-label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 15px; }
         .form-input { width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 16px; }
         .form-input:focus { outline: none; border-color: #28a745; }
         .counter-control { display: flex; align-items: center; gap: 15px; margin: 10px 0; }
-        .counter-btn { width: 40px; height: 40px; border: none; border-radius: 50%; background: #28a745; color: white; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; }
+        .counter-btn { width: 40px; height: 40px; border: none; border-radius: 50%; background: #28a745; color: transparent; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; position: relative; }
         .counter-btn:hover { background: #218838; }
+        .counter-btn::before, .sw-qty-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 44%; height: 2px; background: white; transform: translate(-50%, -50%); border-radius: 1px; }
+        .counter-btn[onclick$=", 1)"]::after, .sw-qty-btn[onclick$=", 1)"]::after { content: ''; position: absolute; top: 50%; left: 50%; width: 2px; height: 44%; background: white; transform: translate(-50%, -50%); border-radius: 1px; }
         .counter-value { font-size: 24px; font-weight: bold; min-width: 60px; text-align: center; }
         .counter-value-input { width: 80px; height: 44px; font-size: 22px; font-weight: bold; text-align: center; border: 2px solid #e9ecef; border-radius: 8px; }
         .counter-value-input:focus { outline: none; border-color: #28a745; }
@@ -114,7 +135,7 @@
         .sap-table tr:nth-child(even) { background: #f8f9fa; }
         .copy-btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin: 10px 5px 10px 0; }
         .copy-btn:hover { background: #0056b3; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: white; margin: 5% auto; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
         .close-modal { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
         .close-modal:hover { color: #000; }
@@ -128,7 +149,6 @@
         .detail-table th { background: #2c3e50; color: white; font-weight: bold; position: sticky; top: 0; }
         .detail-table tr:hover { background: #f8f9fa; }
         .detail-container { max-height: 600px; overflow-y: auto; }
-        .detail-consolidated { background: #e8f5e9; padding: 8px 12px; border-radius: 6px; font-weight: bold; color: #2e7d32; display: inline-block; margin: 5px 0; }
         .detail-total { font-weight: bold; color: #007bff; }
         .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
         .tab { flex: 1; padding: 12px; background: #e9ecef; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; }
@@ -146,17 +166,17 @@
         .btn-delete-record { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; margin-left: 10px; }
         .btn-delete-record:hover { background: #c82333; }
         .weight-input { font-size: 20px; text-align: center; padding: 14px; font-weight: bold; }
-        .smallware-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-        .smallware-chip { padding: 8px 14px; border-radius: 20px; border: 2px solid #e9ecef; background: #f8f9fa; cursor: pointer; font-size: 12.5px; font-weight: bold; color: #333; text-align: center; line-height: 1.3; transition: all 0.15s; }
+        .smallware-buttons { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+        .smallware-chip { padding: 10px 8px; border-radius: 10px; border: 2px solid #e9ecef; background: #f8f9fa; cursor: pointer; font-size: 12.5px; font-weight: bold; color: #333; text-align: center; line-height: 1.3; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .smallware-chip:hover { background: #ede7f6; }
         .smallware-chip.selected { background: #6f42c1; color: white; border-color: #6f42c1; }
-        .smallware-chip .chip-tara { display: block; font-weight: normal; font-size: 10px; opacity: 0.85; margin-top: 1px; }
+        .smallware-chip .chip-tara { display: block; font-weight: normal; font-size: 10px; opacity: 0.85; margin-top: 2px; }
         .selected-smallware-rows { margin-top: 10px; }
         .selected-smallware-row { display: flex; justify-content: space-between; align-items: center; background: #f3eefc; border: 1px solid #d9c8f5; border-radius: 8px; padding: 8px 10px; margin: 6px 0; gap: 10px; }
         .selected-smallware-row .sw-name { font-weight: bold; font-size: 13px; }
         .selected-smallware-row .sw-tara { font-size: 10.5px; color: #6c757d; margin-top: 1px; }
         .selected-smallware-row .sw-qty-control { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-        .selected-smallware-row .sw-qty-btn { width: 28px; height: 28px; border: none; border-radius: 50%; background: #6f42c1; color: white; font-size: 15px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; }
+        .selected-smallware-row .sw-qty-btn { width: 28px; height: 28px; border: none; border-radius: 50%; background: #6f42c1; color: transparent; font-size: 15px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; position: relative; }
         .selected-smallware-row .sw-qty-btn:hover { background: #5e37a6; }
         .selected-smallware-row .sw-qty-value { min-width: 22px; text-align: center; font-weight: bold; }
         .sw-qty-input { width: 44px; height: 30px; text-align: center; font-weight: bold; border: 2px solid #d9c8f5; border-radius: 6px; font-size: 14px; }
@@ -171,6 +191,10 @@
         .selected-smallware-row .sw-remove { background: none; border: none; color: #dc3545; font-size: 18px; line-height: 1; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .net-preview { font-size: 13px; color: #6f42c1; font-weight: bold; margin-top: 6px; min-height: 18px; }
         .sticky-actions { position: sticky; bottom: 0; display: flex; gap: 10px; background: white; margin: 20px -20px -20px -20px; padding: 15px 20px 20px; border-top: 1px solid #e9ecef; box-shadow: 0 -4px 12px rgba(0,0,0,0.06); }
+        body.logged-in .sticky-actions { bottom: 62px; }
+        @media (min-width: 900px) {
+            body.logged-in .sticky-actions { bottom: 0; }
+        }
         .sticky-actions .btn { width: auto; margin: 0; }
         .sticky-actions .btn-save { flex: 2.2; }
         .sticky-actions .btn-reset-outline { flex: 1; background: white; color: #b8860b; border: 2px solid #ffc107; padding: 13px 8px; }
@@ -221,6 +245,15 @@
         </div>
     </div>
 
+    <div id="app-shell">
+        <nav id="sidebar">
+            <div class="sidebar-brand">📦 Inventario PJ</div>
+            <a class="sidebar-link" data-nav="screen-home" onclick="navigateTo('screen-home')"><span class="sidebar-icon">🏠</span> Inicio</a>
+            <a class="sidebar-link" data-nav="screen-list" onclick="navigateTo('screen-list')"><span class="sidebar-icon">📋</span> Contar</a>
+            <a class="sidebar-link" data-nav="screen-production" onclick="navigateTo('screen-production')"><span class="sidebar-icon">🍝</span> Producción</a>
+            <a class="sidebar-link" data-nav="screen-sap" onclick="navigateTo('screen-sap')"><span class="sidebar-icon">📊</span> SAP</a>
+        </nav>
+        <div id="main-content">
     <!-- PANTALLA 1: INICIO -->
     <div id="screen-home" class="screen">
         <div class="container">
@@ -267,26 +300,26 @@
                     <div class="tile-title">Producción</div>
                     <div class="tile-sub">Lasañas</div>
                 </div>
-                <div class="menu-tile" onclick="showScreen('screen-sap')">
+                <div class="menu-tile" onclick="navigateTo('screen-sap')">
                     <div class="tile-icon-wrap" style="background:#d1ecf1;">📋</div>
                     <div class="tile-title">Reporte SAP</div>
                     <div class="tile-sub">Copiar / exportar</div>
                 </div>
-                <div class="menu-tile" onclick="showScreen('screen-details')">
-                    <div class="tile-icon-wrap" style="background:#d4edda;">📝</div>
-                    <div class="tile-title">Detalle</div>
-                    <div class="tile-sub">Conteos e historial</div>
+                <div class="menu-tile" onclick="navigateTo('screen-list')">
+                    <div class="tile-icon-wrap" style="background:#d4edda;">📊</div>
+                    <div class="tile-title">Contar</div>
+                    <div class="tile-sub">Tabla de conteo</div>
                 </div>
             </div>
 
             <div class="menu-section-title">Administración</div>
             <div class="menu-grid">
-                <div class="menu-tile" onclick="showScreen('screen-admin')">
+                <div class="menu-tile" onclick="navigateTo('screen-admin')">
                     <div class="tile-icon-wrap" style="background:#ffe5d0;">⚙️</div>
                     <div class="tile-title">Ítems</div>
                     <div class="tile-sub">Crear y editar</div>
                 </div>
-                <div class="menu-tile" onclick="showScreen('screen-smallwares')">
+                <div class="menu-tile" onclick="navigateTo('screen-smallwares')">
                     <div class="tile-icon-wrap" style="background:#e6dbfa;">🧪</div>
                     <div class="tile-title">Smallwares</div>
                     <div class="tile-sub">Envases y taras</div>
@@ -297,12 +330,12 @@
         </div>
     </div>
 
-    <!-- PANTALLA 2: LISTA DE ÍTEMS -->
+    <!-- PANTALLA 2: LISTA DE ÍTEMS (HOJA DE CÁLCULO) -->
     <div id="screen-list" class="screen">
-        <div class="container">
+        <div class="container" style="max-width: 1100px;">
             <button class="back-btn" onclick="showScreen('screen-home')">Volver al Inicio</button>
             <div class="header">
-                <h1>📋 Lista de Ítems</h1>
+                <h1>📋 Contar</h1>
                 <div class="date" id="inventory-type-label"></div>
             </div>
             <input type="text" class="search-box" id="search-input" placeholder="🔍 Buscar por código o nombre..." oninput="filterItems()">
@@ -311,7 +344,22 @@
                 <button class="filter-btn" onclick="setFilter('pending', this)">Pendientes</button>
                 <button class="filter-btn" onclick="setFilter('counted', this)">Contados</button>
             </div>
-            <div class="item-list" id="item-list"></div>
+            <div class="sheet-wrap">
+                <table class="sheet-table" id="sheet-table">
+                    <thead>
+                        <tr>
+                            <th class="sheet-sticky-col">Material</th>
+                            <th>Descripción</th>
+                            <th>Frec</th>
+                            <th>Estado</th>
+                            <th>Detalle del conteo</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="item-list"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -591,39 +639,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA 7: DETALLE DE CONTEOS -->
-    <div id="screen-details" class="screen">
-        <div class="container">
-            <button class="back-btn" onclick="showScreen('screen-home')">Volver al Inicio</button>
-            <div class="header">
-                <h1>📝 Detalle de Conteos</h1>
-                <div class="date">Resumen consolidado por ítem</div>
-            </div>
-            <div class="card">
-                <div class="alert alert-info" id="detail-filter-info">
-                    📊 Mostrando: <strong id="detail-filter-type">Todos los ítems</strong>
-                </div>
-                <div id="detail-consolidated-view">
-                    <div class="detail-container">
-                        <table class="detail-table" id="detail-consolidated-table">
-                            <thead>
-                                <tr>
-                                    <th>Material</th>
-                                    <th>Descripción</th>
-                                    <th>UM</th>
-                                    <th>Detalle del Conteo</th>
-                                    <th>Total</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="detail-consolidated-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- PANTALLA 8: ADMINISTRAR SMALLWARES (NUEVA) -->
     <div id="screen-smallwares" class="screen">
         <div class="container">
@@ -654,6 +669,14 @@
             </div>
         </div>
     </div>
+        </div>
+    </div>
+    <nav id="bottom-tabs">
+        <button type="button" class="tab-link" data-nav="screen-home" onclick="navigateTo('screen-home')"><span class="tab-icon">🏠</span>Inicio</button>
+        <button type="button" class="tab-link" data-nav="screen-list" onclick="navigateTo('screen-list')"><span class="tab-icon">📋</span>Contar</button>
+        <button type="button" class="tab-link" data-nav="screen-production" onclick="navigateTo('screen-production')"><span class="tab-icon">🍝</span>Producción</button>
+        <button type="button" class="tab-link" data-nav="screen-sap" onclick="navigateTo('screen-sap')"><span class="tab-icon">📊</span>SAP</button>
+    </nav>
 
     <!-- MODAL: NUEVO/EDITAR ÍTEM -->
     <div id="item-modal" class="modal">
@@ -985,6 +1008,7 @@
 
         function enterApp() {
             document.getElementById('screen-login').classList.remove('active');
+            document.body.classList.add('logged-in');
             showScreen('screen-home');
             initFirebaseSync();
         }
@@ -1020,6 +1044,7 @@
             if (confirm('¿Cerrar sesión?')) {
                 localStorage.removeItem('pinVerified');
                 listenersAttached = false;
+                document.body.classList.remove('logged-in');
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById('screen-login').classList.add('active');
                 document.getElementById('login-error').style.display = 'none';
@@ -1194,7 +1219,6 @@
             if (screenId === 'screen-list') renderItemList();
             else if (screenId === 'screen-admin') renderAdminTable();
             else if (screenId === 'screen-sap') renderSapTable();
-            else if (screenId === 'screen-details') renderDetailConsolidated();
             else if (screenId === 'screen-production') renderProductionHistory();
             else if (screenId === 'screen-smallwares') renderSmallwares();
             else if (screenId === 'screen-home') updateItemCounts();
@@ -1208,9 +1232,30 @@
             if (screenId === 'screen-list') renderItemList();
             else if (screenId === 'screen-admin') renderAdminTable();
             else if (screenId === 'screen-sap') renderSapTable();
-            else if (screenId === 'screen-details') renderDetailConsolidated();
             else if (screenId === 'screen-production') renderProductionHistory();
             else if (screenId === 'screen-smallwares') renderSmallwares();
+            updateNavHighlight(screenId);
+        }
+
+        function navigateTo(screenId) {
+            showScreen(screenId);
+        }
+
+        function updateNavHighlight(screenId) {
+            const navMap = {
+                'screen-home': 'screen-home',
+                'screen-list': 'screen-list',
+                'screen-count-weight': 'screen-list',
+                'screen-count-no-weight': 'screen-list',
+                'screen-production': 'screen-production',
+                'screen-sap': 'screen-sap',
+                'screen-admin': 'screen-admin',
+                'screen-smallwares': 'screen-admin'
+            };
+            const target = navMap[screenId] || null;
+            document.querySelectorAll('[data-nav]').forEach(el => {
+                el.classList.toggle('active', el.dataset.nav === target);
+            });
         }
 
         function selectOption(element, value) {
@@ -1404,36 +1449,54 @@
 
         // ==================== RESTO DE FUNCIONES ====================
 
+        function buildItemDetailText(item, data) {
+            if (!data) return '';
+            let parts = [];
+            if (item.weighs) {
+                if (data.boxes && data.boxes > 0) parts.push(`${data.boxes} CJ`);
+                if (data.looseUnits && data.looseUnits > 0) parts.push(`${data.looseUnits} BL`);
+                if (data.containers && data.containers > 0) parts.push(`${data.containers} ${data.smallwareLabel || 'ENV'}`);
+            } else {
+                if (data.packBoxes && data.packBoxes > 0) parts.push(`${data.packBoxes} CJ`);
+                if (data.packages && data.packages > 0) parts.push(`${data.packages} PQT`);
+                if (data.units && data.units > 0) parts.push(`${data.units} UND`);
+            }
+            return parts.join(' + ') || (item.weighs ? 'Solo suma producción' : '0');
+        }
+
         function renderItemList() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const itemList = document.getElementById('item-list');
-            itemList.innerHTML = '';
+            const tbody = document.getElementById('item-list');
+            tbody.innerHTML = '';
             const filteredItems = items.filter(item => {
                 let matchesType = currentInventoryType === 'both' || (currentInventoryType === 'daily' && item.frequency === 'DIARIO') || (currentInventoryType === 'weekly' && item.frequency === 'SEMANAL');
                 const matchesSearch = item.description.toLowerCase().includes(searchTerm) || item.material.includes(searchTerm);
                 const matchesFilter = currentFilter === 'all' || (currentFilter === 'counted' && inventoryData[item.material]) || (currentFilter === 'pending' && !inventoryData[item.material]);
                 return matchesType && matchesSearch && matchesFilter;
             });
+            if (filteredItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#6c757d; padding:30px;">No se encontraron ítems</td></tr>';
+                return;
+            }
             filteredItems.forEach(item => {
-                const isCounted = inventoryData[item.material];
-                const count = isCounted ? isCounted.total : 0;
-                const card = document.createElement('div');
-                card.className = `item-card ${isCounted ? 'counted' : 'pending'}`;
-                card.onclick = () => openItem(item);
-                const countText = item.um === 'KG' || item.um === 'L' ? count.toFixed(3) + ' ' + item.um : count + ' ' + item.um;
-                card.innerHTML = `
-                    <div class="item-card-main">
-                        <div class="item-code">${item.material} · ${item.frequency}</div>
-                        <div class="item-name">${item.description}</div>
-                    </div>
-                    <div class="item-card-right">
-                        <span class="status-badge ${isCounted ? 'status-counted' : 'status-pending'}">${isCounted ? '✅ Contado' : '⏳ Pendiente'}</span>
-                        <span class="item-count-value" style="color: ${isCounted ? (count < 0 ? '#dc3545' : '#28a745') : '#adb5bd'};">${isCounted ? countText : item.um}</span>
-                    </div>
+                const data = inventoryData[item.material];
+                const isCounted = !!data;
+                const total = isCounted ? data.total : 0;
+                const totalText = isCounted ? (item.um === 'KG' || item.um === 'L' ? total.toFixed(3) : total) + ' ' + item.um : '—';
+                const detailText = isCounted ? buildItemDetailText(item, data) : '—';
+                const row = document.createElement('tr');
+                row.onclick = () => openItem(item);
+                row.innerHTML = `
+                    <td class="sheet-sticky-col">${item.material}</td>
+                    <td>${item.description}</td>
+                    <td>${item.frequency}</td>
+                    <td><span class="sheet-status-pill ${isCounted ? 'sheet-status-counted' : 'sheet-status-pending'}">${isCounted ? '✅ Contado' : '⏳ Pendiente'}</span></td>
+                    <td class="sheet-detail-text">${detailText}</td>
+                    <td class="sheet-total ${total < 0 ? 'negative' : ''}">${totalText}</td>
+                    <td><button type="button" class="btn-small btn-count-link" onclick="event.stopPropagation(); goToCountItem('${item.material}')">➕ Contar</button></td>
                 `;
-                itemList.appendChild(card);
+                tbody.appendChild(row);
             });
-            if (filteredItems.length === 0) itemList.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;">No se encontraron ítems</div>';
         }
 
         function filterItems() { renderItemList(); }
@@ -2332,50 +2395,6 @@
             XLSX.utils.book_append_sheet(wb, ws, 'Reporte SAP');
             XLSX.writeFile(wb, `inventario_${new Date().toISOString().split('T')[0]}.xlsx`);
             showToast('✅ Excel descargado');
-        }
-
-        function renderDetailConsolidated() {
-            const tbody = document.getElementById('detail-consolidated-body');
-            tbody.innerHTML = '';
-            
-            const filterType = currentInventoryType === 'daily' ? 'Solo ítems DIARIOS' : 
-                              currentInventoryType === 'weekly' ? 'Solo ítems SEMANALES' : 'Todos los ítems (Diario + Semanal)';
-            document.getElementById('detail-filter-type').textContent = filterType;
-            
-            const filteredItems = items.filter(item => {
-                const hasData = inventoryData[item.material] && inventoryData[item.material].total !== undefined;
-                const matchesType = currentInventoryType === 'both' || 
-                                   (currentInventoryType === 'daily' && item.frequency === 'DIARIO') || 
-                                   (currentInventoryType === 'weekly' && item.frequency === 'SEMANAL');
-                return hasData && matchesType;
-            });
-            
-            if (filteredItems.length === 0) { 
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #6c757d; padding: 40px;">No hay ítems contados para este tipo de inventario</td></tr>'; 
-                return; 
-            }
-            
-            filteredItems.forEach(item => {
-                const data = inventoryData[item.material];
-                const row = document.createElement('tr');
-                let detailText = '';
-                if (item.weighs) {
-                    const parts = [];
-                    if (data.boxes && data.boxes > 0) parts.push(`${data.boxes} CJ`);
-                    if (data.looseUnits && data.looseUnits > 0) parts.push(`${data.looseUnits} BL`);
-                    if (data.containers && data.containers > 0) parts.push(`${data.containers} ${data.smallwareLabel || 'ENV'}`);
-                    detailText = parts.join(' + ') || 'Solo suma producción';
-                } else {
-                    const parts = [];
-                    if (data.packages && data.packages > 0) parts.push(`${data.packages} PQT`);
-                    if (data.units && data.units > 0) parts.push(`${data.units} UND`);
-                    detailText = parts.join(' + ') || '0';
-                }
-                const totalDisplay = item.um === 'KG' || item.um === 'L' ? data.total.toFixed(3) : data.total;
-                const totalClass = data.total < 0 ? 'negative-stock' : 'detail-total';
-                row.innerHTML = `<td><strong>${item.material}</strong></td><td>${item.description}</td><td>${item.um}</td><td><span class="detail-consolidated">${detailText}</span></td><td class="${totalClass}">${totalDisplay} ${item.um}</td><td><button type="button" class="btn-small btn-count-link" onclick="goToCountItem('${item.material}')">➕ Contar</button></td>`;
-                tbody.appendChild(row);
-            });
         }
 
         function goToCountItem(material) {
