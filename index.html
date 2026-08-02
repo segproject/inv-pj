@@ -344,6 +344,7 @@
                 <button class="filter-btn" onclick="setFilter('pending', this)">Pendientes</button>
                 <button class="filter-btn" onclick="setFilter('counted', this)">Contados</button>
             </div>
+            <button class="copy-btn" onclick="copySheetTable()" style="margin-bottom: 10px;">📋 COPIAR TABLA</button>
             <div class="sheet-wrap">
                 <table class="sheet-table" id="sheet-table">
                     <thead>
@@ -2375,6 +2376,18 @@
             document.querySelectorAll('#sap-table tbody tr').forEach(row => {
                 const cells = row.querySelectorAll('td');
                 if (cells.length === 4) text += `${cells[0].textContent}\t${cells[1].textContent}\t${cells[2].textContent}\t${cells[3].textContent}\n`;
+            });
+            navigator.clipboard.writeText(text).then(() => showToast('✅ Tabla copiada')).catch(err => showToast('❌ Error: ' + err, 'warning'));
+        }
+
+        function copySheetTable() {
+            let text = 'Material\tDescripción\tFrec\tEstado\tDetalle del conteo\tTotal\n';
+            document.querySelectorAll('#sheet-table tbody tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 6) {
+                    const values = Array.from(cells).slice(0, 6).map(c => c.textContent.trim());
+                    text += values.join('\t') + '\n';
+                }
             });
             navigator.clipboard.writeText(text).then(() => showToast('✅ Tabla copiada')).catch(err => showToast('❌ Error: ' + err, 'warning'));
         }
