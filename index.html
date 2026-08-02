@@ -389,7 +389,7 @@
                     <div class="calc-note" id="pack-box-calc-note"></div>
                     <div class="counter-control">
                         <button class="counter-btn" onclick="adjustCounter('packBoxes', -1)">-</button>
-                        <input type="number" inputmode="numeric" class="counter-value-input" id="counter-pack-boxes" value="0" min="0" onfocus="this.select()" onchange="setCounterFromInput('packBoxes', this.value)">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="counter-value-input" id="counter-pack-boxes" value="0" min="0" onfocus="this.select()" onchange="setCounterFromInput('packBoxes', this.value)">
                         <button class="counter-btn" onclick="adjustCounter('packBoxes', 1)">+</button>
                     </div>
                 </div>
@@ -397,7 +397,7 @@
                     <label class="form-label">Paquetes cerrados:</label>
                     <div class="counter-control">
                         <button class="counter-btn" onclick="adjustCounter('packages', -1)">-</button>
-                        <input type="number" inputmode="numeric" class="counter-value-input" id="counter-packages" value="0" min="0" onfocus="this.select()" onchange="setCounterFromInput('packages', this.value)">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="counter-value-input" id="counter-packages" value="0" min="0" onfocus="this.select()" onchange="setCounterFromInput('packages', this.value)">
                         <button class="counter-btn" onclick="adjustCounter('packages', 1)">+</button>
                     </div>
                 </div>
@@ -405,7 +405,7 @@
                     <label class="form-label">Unidades sueltas:</label>
                     <div class="counter-control">
                         <button class="counter-btn" onclick="adjustCounter('units', -1)">-</button>
-                        <input type="number" inputmode="numeric" class="counter-value-input" id="counter-units" value="0" min="0" onfocus="this.select()" onchange="setCounterFromInput('units', this.value)">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="counter-value-input" id="counter-units" value="0" min="0" onfocus="this.select()" onchange="setCounterFromInput('units', this.value)">
                         <button class="counter-btn" onclick="adjustCounter('units', 1)">+</button>
                     </div>
                 </div>
@@ -453,7 +453,7 @@
                         </div>
                         <div class="counter-control counter-control-compact">
                             <button class="counter-btn" onclick="adjustCounter('boxes', -1)">-</button>
-                            <input type="number" inputmode="numeric" class="counter-value-input" id="counter-boxes" value="0" min="0" onfocus="this.select()" onchange="setCounterFromInput('boxes', this.value)">
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="counter-value-input" id="counter-boxes" value="0" min="0" onfocus="this.select()" onchange="setCounterFromInput('boxes', this.value)">
                             <button class="counter-btn" onclick="adjustCounter('boxes', 1)">+</button>
                         </div>
                     </div>
@@ -464,7 +464,7 @@
                         </div>
                         <div class="counter-control counter-control-compact">
                             <button class="counter-btn" onclick="adjustCounter('looseUnits', -1)">-</button>
-                            <input type="number" inputmode="numeric" class="counter-value-input" id="counter-loose-units" value="0" min="0" onfocus="this.select()" onchange="setCounterFromInput('looseUnits', this.value)">
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="counter-value-input" id="counter-loose-units" value="0" min="0" onfocus="this.select()" onchange="setCounterFromInput('looseUnits', this.value)">
                             <button class="counter-btn" onclick="adjustCounter('looseUnits', 1)">+</button>
                         </div>
                     </div>
@@ -479,7 +479,7 @@
                     <div class="selected-smallware-rows" id="selected-smallware-rows"></div>
                     <div class="form-group">
                         <label class="form-label">Peso TOTAL en balanza (kg):</label>
-                        <input type="number" inputmode="decimal" class="form-input weight-input" id="gross-weight" step="0.001" placeholder="0.000" onfocus="this.select()" oninput="calculateWeight()">
+                        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" class="form-input weight-input" id="gross-weight" placeholder="0.000" onfocus="this.select()" oninput="calculateWeight()">
                         <div class="net-preview" id="net-preview"></div>
                     </div>
                 </div>
@@ -530,7 +530,7 @@
                         </div>
                         <div class="counter-control counter-control-compact">
                             <button class="counter-btn" onclick="adjustRecipe('americana', -1)">-</button>
-                            <input type="number" inputmode="numeric" class="counter-value-input" id="recipe-americana" value="0" min="0" onfocus="this.select()" onchange="setRecipeFromInput('americana', this.value)">
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="counter-value-input" id="recipe-americana" value="0" min="0" onfocus="this.select()" onchange="setRecipeFromInput('americana', this.value)">
                             <button class="counter-btn" onclick="adjustRecipe('americana', 1)">+</button>
                         </div>
                     </div>
@@ -541,7 +541,7 @@
                         </div>
                         <div class="counter-control counter-control-compact">
                             <button class="counter-btn" onclick="adjustRecipe('meats', -1)">-</button>
-                            <input type="number" inputmode="numeric" class="counter-value-input" id="recipe-meats" value="0" min="0" onfocus="this.select()" onchange="setRecipeFromInput('meats', this.value)">
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="counter-value-input" id="recipe-meats" value="0" min="0" onfocus="this.select()" onchange="setRecipeFromInput('meats', this.value)">
                             <button class="counter-btn" onclick="adjustRecipe('meats', 1)">+</button>
                         </div>
                     </div>
@@ -552,7 +552,7 @@
                         </div>
                         <div class="counter-control counter-control-compact">
                             <button class="counter-btn" onclick="adjustRecipe('works', -1)">-</button>
-                            <input type="number" inputmode="numeric" class="counter-value-input" id="recipe-works" value="0" min="0" onfocus="this.select()" onchange="setRecipeFromInput('works', this.value)">
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="counter-value-input" id="recipe-works" value="0" min="0" onfocus="this.select()" onchange="setRecipeFromInput('works', this.value)">
                             <button class="counter-btn" onclick="adjustRecipe('works', 1)">+</button>
                         </div>
                     </div>
@@ -1438,7 +1438,7 @@
                         </div>
                         <div class="sw-qty-control">
                             <button type="button" class="sw-qty-btn" onclick="adjustSelectedQty('${id}', -1)">-</button>
-                            <input type="number" inputmode="numeric" class="sw-qty-input" value="${qty}" min="1" onfocus="this.select()" onchange="setSelectedQty('${id}', this.value)">
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="sw-qty-input" value="${qty}" onfocus="this.select()" onchange="setSelectedQty('${id}', this.value)">
                             <button type="button" class="sw-qty-btn" onclick="adjustSelectedQty('${id}', 1)">+</button>
                             <button type="button" class="sw-remove" onclick="removeSelectedSmallware('${id}')">✕</button>
                         </div>
@@ -1648,6 +1648,11 @@
             }
         }
 
+        function readDecimal(elementId) {
+            const raw = (document.getElementById(elementId).value || '').trim().replace(',', '.');
+            return parseFloat(raw) || 0;
+        }
+
         function calculateWeight() {
             if (!currentItem) return;
             const wpb = currentItem.weightPerBox || 0;
@@ -1660,7 +1665,7 @@
                 return sum + (sw ? sw.weight * selectedSmallwares[id] : 0);
             }, 0);
             const totalContainerCount = containerIds.reduce((sum, id) => sum + selectedSmallwares[id], 0);
-            const grossWeight = parseFloat(document.getElementById('gross-weight').value) || 0;
+            const grossWeight = readDecimal('gross-weight');
             const netWeight = grossWeight - totalTara;
             const newTotal = boxesWeight + looseWeight + netWeight;
             const previousData = inventoryData[currentItem.material];
@@ -1698,7 +1703,7 @@
                 return sum + (sw ? sw.weight * selectedSmallwares[id] : 0);
             }, 0);
             const totalContainerCount = containerIds.reduce((sum, id) => sum + selectedSmallwares[id], 0);
-            const grossWeight = parseFloat(document.getElementById('gross-weight').value) || 0;
+            const grossWeight = readDecimal('gross-weight');
             const netWeight = grossWeight - totalTara;
             const newTotal = boxesWeight + looseWeight + netWeight;
             if (grossWeight > 0 && containerIds.length === 0) {
@@ -1873,22 +1878,22 @@
                 container.innerHTML = `
                     <div class="form-row">
                         <label>Cajas (CJ):</label>
-                        <input type="number" inputmode="numeric" id="mv-boxes" value="${boxes}" min="0" oninput="previewEditedMovement()">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" id="mv-boxes" value="${boxes}" min="0" oninput="previewEditedMovement()">
                         <div style="font-size: 12px; color: #6c757d; margin-top: 3px;">Cada caja pesa ${wpb.toFixed(3)} KG</div>
                     </div>
                     <div class="form-row">
                         <label>Bolsas/Unidades sueltas (BL):</label>
-                        <input type="number" inputmode="numeric" id="mv-loose" value="${loose}" min="0" oninput="previewEditedMovement()">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" id="mv-loose" value="${loose}" min="0" oninput="previewEditedMovement()">
                         <div style="font-size: 12px; color: #6c757d; margin-top: 3px;">Cada bolsa/unidad pesa ${wpu.toFixed(3)} KG</div>
                     </div>
                     <div class="form-row">
                         <label>Número de envases (SMALLWARE):</label>
-                        <input type="number" inputmode="numeric" id="mv-container-count" value="${containerCount}" min="0" oninput="previewEditedMovement()">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" id="mv-container-count" value="${containerCount}" min="0" oninput="previewEditedMovement()">
                         <div style="font-size: 12px; color: #6c757d; margin-top: 3px;">Cuántos envases se pesaron (solo informativo, no cambia el peso)</div>
                     </div>
                     <div class="form-row">
                         <label>Peso neto de envases (KG):</label>
-                        <input type="number" inputmode="decimal" step="0.001" id="mv-containers-net" value="${containersNet.toFixed(3)}" oninput="previewEditedMovement()">
+                        <input type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="mv-containers-net" value="${containersNet.toFixed(3)}" oninput="previewEditedMovement()">
                         <div style="font-size: 12px; color: #6c757d; margin-top: 3px;">Este es el que sí afecta el total pesado</div>
                     </div>
                 `;
@@ -1901,7 +1906,7 @@
                 const boxesFieldHtml = packagesPerBox > 0 ? `
                     <div class="form-row">
                         <label>Cajas (CJ):</label>
-                        <input type="number" inputmode="numeric" id="mv-pack-boxes" value="${packBoxes}" min="0" oninput="previewEditedMovement()">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" id="mv-pack-boxes" value="${packBoxes}" min="0" oninput="previewEditedMovement()">
                         <div style="font-size: 12px; color: #6c757d; margin-top: 3px;">Cada caja trae ${packagesPerBox} paquetes</div>
                     </div>
                 ` : '';
@@ -1909,12 +1914,12 @@
                     ${boxesFieldHtml}
                     <div class="form-row">
                         <label>Paquetes (PQT):</label>
-                        <input type="number" inputmode="numeric" id="mv-packages" value="${packages}" min="0" oninput="previewEditedMovement()">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" id="mv-packages" value="${packages}" min="0" oninput="previewEditedMovement()">
                         <div style="font-size: 12px; color: #6c757d; margin-top: 3px;">Cada paquete trae ${upp} ${currentItem.um}</div>
                     </div>
                     <div class="form-row">
                         <label>Unidades sueltas (${currentItem.um}):</label>
-                        <input type="number" inputmode="numeric" id="mv-units" value="${units}" min="0" oninput="previewEditedMovement()">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" id="mv-units" value="${units}" min="0" oninput="previewEditedMovement()">
                     </div>
                 `;
             }
@@ -1929,7 +1934,7 @@
                 const wpu = currentItem.weightPerUnit || currentItem.weightPerBox || 0;
                 const boxes = parseFloat(document.getElementById('mv-boxes').value) || 0;
                 const loose = parseFloat(document.getElementById('mv-loose').value) || 0;
-                const containersNet = parseFloat(document.getElementById('mv-containers-net').value) || 0;
+                const containersNet = readDecimal('mv-containers-net');
                 const qty = (boxes * wpb) + (loose * wpu) + containersNet;
                 preview.textContent = `${qty.toFixed(3)} KG`;
             } else {
@@ -1953,7 +1958,7 @@
                 const boxes = Math.max(0, parseFloat(document.getElementById('mv-boxes').value) || 0);
                 const loose = Math.max(0, parseFloat(document.getElementById('mv-loose').value) || 0);
                 const containerCount = Math.max(0, parseInt(document.getElementById('mv-container-count').value) || 0);
-                const containersNet = parseFloat(document.getElementById('mv-containers-net').value) || 0;
+                const containersNet = readDecimal('mv-containers-net');
                 const qty = (boxes * wpb) + (loose * wpu) + containersNet;
                 m.boxes = boxes;
                 m.looseUnits = loose;
